@@ -5444,7 +5444,9 @@ html[dir="rtl"] .course-form .edit-lectures {
 
 .courses-feed .content-header button.active {
   background-color: var(--main-color);
+  color: #fff;
 }
+
 
 .courses-feed .content-header button:hover {
   background-color: var(--main-color);
@@ -5466,6 +5468,13 @@ html[dir="rtl"] .course-form .edit-lectures {
   #content main .profile-main .profile-container {
     padding: 0 0 1rem !important;
     overflow: hidden;
+  }
+
+  .course-feed-card .edit-course {
+    top: 10px;
+    height: fit-content;
+    left: 10px !important;
+    right: auto !important;
   }
 
   .profile-cover {
@@ -5803,6 +5812,7 @@ html[dir="rtl"] .bookmark-category-wrapper {
   -o-border-radius: 5px;
   gap: 5px;
   cursor: pointer;
+  color: #fff;
 }
 
 html[dir="rtl"] .course-feed-card .edit-course {
