@@ -3757,7 +3757,7 @@ html {
   width: 280px;
   height: 100%;
   background: var(--nav-bg);
-  z-index: 2000;
+  z-index: 900;
   transition: 0.3s ease;
   overflow-x: hidden;
   scrollbar-width: none;
@@ -3958,7 +3958,6 @@ html[dir="rtl"] #sidebar {
   font-family: "Outfit", sans-serif;
   position: sticky;
   top: 0;
-  left: 0;
   z-index: 1000;
 }
 
@@ -6065,7 +6064,7 @@ html[dir="rtl"] .course-feed-card .edit-course {
   }
 
   #content {
-    width: calc(100% - 200px);
+    width: calc(100% - 60px);
     right: auto;
     left: 200px;
   }
