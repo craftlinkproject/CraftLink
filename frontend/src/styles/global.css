@@ -64,6 +64,7 @@ body {
   --orange: #fd7238;
   --light-orange: #ffe0d3;
   background-color: var(--bg-color);
+  overflow-x: hidden;
 }
 
 html[dir="rtl"] body {
@@ -3764,8 +3765,8 @@ html {
 }
 
 html[dir="rtl"] #sidebar {
-  right: 0;
-  left: auto;
+  right: 0 !important;
+  left: auto !important;
 }
 
 #sidebar::--webkit-scrollbar {
@@ -3945,8 +3946,8 @@ html[dir="rtl"] #sidebar.hide~#content {
 }
 
 html[dir="rtl"] #sidebar {
-  right: 0;
-  left: auto;
+  right: 0 !important;
+  left: auto !important;
 }
 
 #content nav {
@@ -6072,13 +6073,8 @@ html[dir="rtl"] .course-feed-card .edit-course {
     width: 200px;
   }
 
-  html[dir="rtl"] #sidebar {
-    right: 0 !important;
-    left: auto !important;
-  }
-
   #content {
-    width: calc(100% - 200px);
+    width: calc(100% - 60px);
     right: auto;
     left: 200px;
   }
