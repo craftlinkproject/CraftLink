@@ -210,7 +210,10 @@ const Profile = () => {
                       <AiOutlineMessage />
                       <span>{t("Messages")}</span>
                     </button>
-                    <VscSettings className="settings" />
+                    <VscSettings className="settings" onClick={() => {
+                      setActiveTab("details");
+                      setProfileTab("profile");
+                    }} />
                   </div>
                 </div>
 
@@ -239,24 +242,17 @@ const Profile = () => {
               <div className="courses-feed">
                 <div className="content-header">
                   <div className="action-tab">
-                    <button
-                      className={activeTab === "details" ? "active" : ""}
-                      onClick={() => {
-                        setActiveTab("details");
-                        setProfileTab("profile");
-                      }}
-                    >
-                      {t("Details")}
-                    </button>
-                    <button
-                      className={activeTab === "courses" ? "active" : ""}
-                      onClick={() => {
-                        setActiveTab("courses");
-                        setProfileTab("profile");
-                      }}
-                    >
-                      {isInstructor ? t("Courses") : t("Feeds")}
-                    </button>
+                    {isInstructor &&
+                      <button
+                        className={activeTab === "courses" ? "active" : ""}
+                        onClick={() => {
+                          setActiveTab("courses");
+                          setProfileTab("profile");
+                        }}
+                      >
+                        {t("Courses")}
+                      </button>
+                    }
                     {isMyProfile && (
                       <button
                         className={profileTab === "posts" ? "active" : ""}
@@ -359,7 +355,7 @@ const Profile = () => {
 
                 {/* CERTIFICATES TAB */}
                 {profileTab === "certificates" && (
-                  <div className="certificates-tab" style={{ padding: "20px 0" }}>
+                  <div className="certificates-tab" style={{ flexDirection: "column", padding: "20px 0", flex: 1, justifyContent: "center", display: "flex" }}>
                     <h3 style={{ fontSize: "1.5rem", marginBottom: "20px", color: "var(--text-primary)" }}>
                       🎓 {t("Earned Certificates")}
                     </h3>
