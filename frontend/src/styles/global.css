@@ -5414,6 +5414,8 @@ html[dir="rtl"] .course-form .edit-lectures {
   -ms-border-radius: 10px;
   -o-border-radius: 10px;
   font-family: inherit;
+  white-space: nowrap;
+  letter-spacing: nowrap;
 }
 
 .courses-feed .content-header .sort {
@@ -5435,8 +5437,7 @@ html[dir="rtl"] .course-form .edit-lectures {
   -moz-transition: all 0.3s ease-in-out;
   -ms-transition: all 0.3s ease-in-out;
   -o-transition: all 0.3s ease-in-out;
-  white-space: nowrap;
-  letter-spacing: nowrap;
+
 }
 
 .courses-feed .course-card {

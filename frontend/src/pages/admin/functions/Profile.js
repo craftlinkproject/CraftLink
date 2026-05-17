@@ -24,6 +24,7 @@ export const useProfileLogic = () => {
   const dispatch = useDispatch();
   const { userId } = useParams();
   const encryptionKeysRef = useRef({});
+  const lastLoadedUserIdRef = useRef(null);
   const { darkMode, setDarkMode } = useTheme();
   const { handleFocus, handleBlur } = useInputAnimation();
   const { showPass, togglePass, inputType } = usePasswordToggle();
@@ -308,6 +309,24 @@ export const useProfileLogic = () => {
     setLastName(lName);
     setBio(userBio);
     originalProfile.current = { firstName: fName, lastName: lName, bio: userBio };
+  }, [displayedUser]);
+
+  // ========================================================================
+  // EFFECTS - INITIALIZE DEFAULT ACTIVE TAB BY ROLE
+  // ========================================================================
+  useEffect(() => {
+    if (!displayedUser) return;
+
+    if (lastLoadedUserIdRef.current !== displayedUser._id) {
+      lastLoadedUserIdRef.current = displayedUser._id;
+      if (displayedUser.role === 2) { // 2 = Instructor / Trainer
+        setActiveTab("courses");
+        setProfileTab("profile");
+      } else { // 1 = Craftsman, 3 = Client
+        setActiveTab("posts");
+        setProfileTab("posts");
+      }
+    }
   }, [displayedUser]);
 
   // ========================================================================
