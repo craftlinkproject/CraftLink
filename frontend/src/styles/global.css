@@ -6072,8 +6072,13 @@ html[dir="rtl"] .course-feed-card .edit-course {
     width: 200px;
   }
 
+  html[dir="rtl"] #sidebar {
+    right: 0 !important;
+    left: auto !important;
+  }
+
   #content {
-    width: calc(100% - 60px);
+    width: calc(100% - 200px);
     right: auto;
     left: 200px;
   }
