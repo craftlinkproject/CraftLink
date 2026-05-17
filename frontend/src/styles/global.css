@@ -3938,6 +3938,7 @@ html[dir="rtl"] #sidebar.hide~#content {
 
 html[dir="rtl"] #sidebar {
   right: 0;
+  left: auto;
 }
 
 #content nav {
@@ -6061,6 +6062,10 @@ html[dir="rtl"] .course-feed-card .edit-course {
     left: 200px;
   }
 
+  html[dir="rtl"] #content {
+    left: auto;
+    right: 200px;
+  }
 }
 
 @media screen and (max-width: 576px) {
