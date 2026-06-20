@@ -1,0 +1,36 @@
+const stopWords = {
+  en: new Set([
+    "i", "me", "my", "myself", "we", "our", "ours", "ourselves", "you",
+    "your", "yours", "yourself", "yourselves", "he", "him", "his",
+    "himself", "she", "her", "hers", "herself", "it", "its", "itself",
+    "they", "them", "their", "theirs", "themselves", "what", "which",
+    "who", "whom", "this", "that", "these", "those", "am", "is", "are",
+    "was", "were", "be", "been", "being", "have", "has", "had", "having",
+    "do", "does", "did", "doing", "would", "should", "could", "ought",
+    "might", "will", "shall", "can", "may", "must", "a", "an", "the",
+    "and", "but", "if", "or", "because", "as", "until", "while", "of",
+    "at", "by", "for", "with", "about", "against", "between", "into",
+    "through", "during", "before", "after", "above", "below", "to",
+    "from", "up", "down", "in", "out", "on", "off", "over", "under",
+    "again", "further", "then", "once", "here", "there", "when", "where",
+    "why", "how", "all", "each", "every", "both", "few", "more", "most",
+    "other", "some", "such", "no", "nor", "not", "only", "own", "same",
+    "so", "than", "too", "very", "just", "get", "got", "gotten", "want",
+  ]),
+  ar: new Set([
+    "انا", "نحن", "انت", "انتي", "انتم", "انتن", "هو", "هي", "هم",
+    "هن", "هذا", "هذه", "هؤلاء", "ذلك", "تلك", "اولئك", "من", "الى",
+    "عن", "على", "في", "كان", "كانت", "يكون", "يكونون", "لم", "لن",
+    "سوف", "قد", "لقد", "ان", "إن", "له", "لها", "لهم", "لهن", "مع",
+    "بين", "تحت", "فوق", "او", "أو", "و", "ف", "ثم", "لا", "ما",
+    "اذا", "إذا", "لكن", "لذلك", "لأن", "حتى", "عند", "عندما", "بعد",
+    "قبل", "اثناء", "خلال", "حول", "ضد", "نحو", "كل", "بعض", "أي",
+    "اي", "اخر", "آخر", "اخرى", "اخري", "نفس", "ذات", "غير", "اكثر",
+    "أكثر", "اقل", "أقل", "فقط", "حسب", "هناك", "هنا", "دائما",
+    "ابدا", "أبدا", "نعم", "كلا", "ربما", "ماذا", "لماذا", "كيف",
+    "أين", "اين", "متى", "كم", "ايها", "أيها", "ايها", "أيتها",
+    "عايز", "عاوز", "نفسي", "محتاج", "اريد", "أريد", "أحتاج", "احتاج",
+  ]),
+};
+
+export { stopWords };

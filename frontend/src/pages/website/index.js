@@ -11,6 +11,7 @@ import TermsPage from "./pages/TermsPage";
 import PaymentSuccess from "./pages/PaymentSuccess";
 import PaymentFail from "./pages/PaymentFail";
 import Search from "./pages/Search";
+import CertificateVerification from "./pages/CertificateVerification";
 export {
   SignUp,
   SignIn,
@@ -25,4 +26,5 @@ export {
   Search,
   PaymentFail,
   TermsPage,
+  CertificateVerification,
 };

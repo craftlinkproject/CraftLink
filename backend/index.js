@@ -16,6 +16,7 @@ import messageRouter from "./route/messageRoute.js";
 import postRouter from "./route/postRoute.js";
 import paymentWebhook from "./route/paymentWebhook.js";
 import searchRoutes from "./route/searchRoutes.js";
+import supportRoutes from "./route/supportRoutes.js";
 import { initializeSocket } from "./sockets/index.js";
 const app = express();
 const port = Number(process.env.PORT) || 8000;
@@ -34,7 +35,6 @@ socket.on("error", (err) => {
 });
 const allowedOrigins = [
   "http://localhost:5173",
-  "https://craftlink-cfwv.vercel.app"
 ];
 
 app.use(cors({
@@ -57,6 +57,7 @@ app.use("/api/withdrawal", withdrawRouter);
 app.use("/api/message", messageRouter);
 app.use("/api/post", postRouter);
 app.use("/api", searchRoutes);
+app.use("/api/support", supportRoutes);
 app.get("/", (req, res) => res.send("Server Running 🚀"));
 const server = http.createServer(app);
 const io = new Server(server, {
@@ -67,10 +68,21 @@ const io = new Server(server, {
 });
 app.set("io", io);
 initializeSocket(io);
+import Certificate from "./model/certificateModel.js";
+
 const startServer = async () => {
   try {
     await connectDb();
     console.log("DB Connected");
+
+    // Sync indexes: drop old user_1_course_1 index, keep user_1_course_1_language_1
+    try {
+      await Certificate.syncIndexes();
+      console.log("Certificate indexes synced");
+    } catch (idxErr) {
+      console.error("Index sync error:", idxErr.message);
+    }
+
     server.listen(port, "0.0.0.0", () => {
       console.log(`Server Running On Port ${port}`);
     });

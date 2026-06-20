@@ -23,7 +23,13 @@ const CourseCard = ({ image, title, instructor, tag, hours, lectures, level, pri
                             <HiArrowUpRight onClick={() => navigate(`/viewcourse/${courseId}`)} />
                         </div>
                         <div className="tag-star">
-                            <span>#{t(tag)}</span>
+                            <span
+                              style={{ cursor: "pointer" }}
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                navigate(`/search?category=${encodeURIComponent(tag)}`);
+                              }}
+                            >#{t(tag)}</span>
                             <span className="star"><FaStar />{averageRating}</span>
                         </div>
                         <span className="hours"><BsClockHistory />{hours}</span>

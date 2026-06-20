@@ -558,5 +558,15 @@
   "No reviews yet. Be the first to review this course!": "No reviews yet. Be the first to review this course!",
   "Review submitted successfully!": "Review submitted successfully!",
   "Failed to submit review": "Failed to submit review",
-  "Certificates": "Certificates"
+  "Certificates": "Certificates",
+  "Language": "Language",
+  "English": "English",
+  "Arabic": "Arabic",
+  "Dark Mode": "Dark Mode",
+  "Light Mode": "Light Mode",
+  "Category": "Category",
+  "AI understood": "AI understood",
+  "Intent": "Intent",
+  "Showing related categories": "Showing related categories",
+  "Results for": "Results for"
 }

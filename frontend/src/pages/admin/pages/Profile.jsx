@@ -30,6 +30,7 @@ import {
   FaEye,
   FaEyeLowVision,
   MdPassword,
+  HiMiniLanguage,
 } from "@icons";
 
 import { ClipLoader } from "react-spinners";
@@ -86,6 +87,8 @@ const Profile = () => {
     isMyProfile,
     displayedUser,
     isInstructor,
+    isCraftsman,
+    canShowPosts,
     isOwner,
     filteredCourses,
     sortLabel,
@@ -119,6 +122,13 @@ const Profile = () => {
     (sum, course) => sum + (course.paidAmount || course.price || 0),
     0,
   );
+
+  const toggleProfileLanguage = () => {
+    const newLang = i18n.language === "en" ? "ar" : "en";
+    i18n.changeLanguage(newLang);
+    localStorage.setItem("lang", newLang);
+    document.documentElement.dir = newLang === "ar" ? "rtl" : "ltr";
+  };
 
   return (
     <div>
@@ -253,7 +263,7 @@ const Profile = () => {
                         {t("Courses")}
                       </button>
                     }
-                    {isMyProfile && (
+                    {canShowPosts && (
                       <button
                         className={profileTab === "posts" ? "active" : ""}
                         onClick={() => {
@@ -264,7 +274,7 @@ const Profile = () => {
                         {t("Posts")}
                       </button>
                     )}
-                    {isOwner && (
+                    {isOwner && isCraftsman && (
                       <button
                         className={profileTab === "purchased" ? "active" : ""}
                         onClick={
@@ -277,7 +287,7 @@ const Profile = () => {
                         {t("Purchased Courses")}
                       </button>
                     )}
-                    {(certificates.length > 0 || isMyProfile) && (
+                    {isCraftsman && (certificates.length > 0 || isMyProfile) && (
                       <button
                         className={profileTab === "certificates" ? "active" : ""}
                         onClick={() => {
@@ -297,9 +307,8 @@ const Profile = () => {
                 </div>
 
                 {/* POSTS TAB */}
-                {profileTab === "posts" && isMyProfile && (
+                {profileTab === "posts" && canShowPosts && (
                   <div className="user-posts-tab">
-                    <h3>{t("User Posts")}</h3>
                     {postsLoading ? (
                       <LoadingDouble />
                     ) : userPosts.length === 0 ? (
@@ -318,7 +327,7 @@ const Profile = () => {
                 )}
 
                 {/* PURCHASED COURSES TAB */}
-                {profileTab === "purchased" && isOwner && (
+                {profileTab === "purchased" && isOwner && isCraftsman && (
                   <div className="purchased-courses-tab">
                     <div className="purchased-summary">
                       <div>
@@ -370,73 +379,114 @@ const Profile = () => {
                       </div>
                     ) : (
                       <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(280px, 1fr))", gap: "20px" }}>
-                        {certificates.map((cert) => (
-                          <div
-                            key={cert._id}
-                            className="certificate-card"
-                            style={{
-                              background: "var(--card-bg)",
-                              border: "1px solid var(--border-color)",
-                              borderRadius: "16px",
-                              overflow: "hidden",
-                              boxShadow: "0 4px 15px rgba(0,0,0,0.05)",
-                              transition: "all 0.3s ease",
-                              display: "flex",
-                              flexDirection: "column",
-                              justifyContent: "space-between",
-                            }}
-                          >
-                            <div style={{ padding: "20px" }}>
-                              {/* Course mini thumbnail */}
-                              <div style={{ width: "100%", height: "140px", borderRadius: "12px", overflow: "hidden", marginBottom: "16px" }}>
-                                <img
-                                  src={cert.course?.thumbnail || image}
-                                  alt={cert.course?.title}
-                                  style={{ width: "100%", height: "100%", objectFit: "cover" }}
-                                />
+                        {Object.values(
+                          certificates.reduce((acc, cert) => {
+                            const courseId = cert.course?._id;
+                            if (!acc[courseId]) {
+                              acc[courseId] = { ...cert, langs: [cert.language] };
+                            } else {
+                              acc[courseId].langs.push(cert.language);
+                            }
+                            return acc;
+                          }, {})
+                        ).map((group) => {
+                          const hasAr = group.langs.includes("ar");
+                          const hasEn = group.langs.includes("en");
+                          return (
+                            <div
+                              key={group._id}
+                              className="certificate-card"
+                              style={{
+                                background: "var(--card-bg)",
+                                border: "1px solid var(--border-color)",
+                                borderRadius: "16px",
+                                overflow: "hidden",
+                                boxShadow: "0 4px 15px rgba(0,0,0,0.05)",
+                                transition: "all 0.3s ease",
+                                display: "flex",
+                                flexDirection: "column",
+                                justifyContent: "space-between",
+                              }}
+                            >
+                              <div style={{ padding: "20px" }}>
+                                <div style={{ width: "100%", height: "140px", borderRadius: "12px", overflow: "hidden", marginBottom: "16px" }}>
+                                  <img
+                                    src={group.course?.thumbnail || image}
+                                    alt={group.course?.title}
+                                    style={{ width: "100%", height: "100%", objectFit: "cover" }}
+                                  />
+                                </div>
+                                <div style={{ display: "flex", alignItems: "center", gap: "8px", marginBottom: "8px", flexWrap: "wrap" }}>
+                                  <h4 style={{ fontSize: "1.15rem", fontWeight: "bold", color: "var(--text-primary)", margin: 0, flex: 1 }}>
+                                    {group.course?.title}
+                                  </h4>
+                                  <div style={{ display: "flex", gap: "4px" }}>
+                                    {hasAr && <span style={{ padding: "2px 8px", borderRadius: "6px", background: "rgba(212, 175, 55, 0.12)", color: "#b8860b", fontSize: "0.7rem", fontWeight: 700 }}>AR</span>}
+                                    {hasEn && <span style={{ padding: "2px 8px", borderRadius: "6px", background: "rgba(37, 99, 235, 0.1)", color: "#2563eb", fontSize: "0.7rem", fontWeight: 700 }}>EN</span>}
+                                  </div>
+                                </div>
+                                <p style={{ fontSize: "0.85rem", color: "var(--text-muted)", marginBottom: "12px" }}>
+                                  {t("Verification ID:")}{" "}
+                                  <span style={{ fontFamily: "monospace", color: "var(--primary-color)", fontWeight: "bold" }}>
+                                    {group.certificateId}
+                                  </span>
+                                </p>
+                                <p style={{ fontSize: "0.85rem", color: "var(--text-muted)" }}>
+                                  📅 {t("Date of Issue:")}{" "}
+                                  <strong>{new Date(group.issueDate || group.createdAt).toLocaleDateString()}</strong>
+                                </p>
                               </div>
-                              <h4 style={{ fontSize: "1.15rem", fontWeight: "bold", color: "var(--text-primary)", marginBottom: "8px" }}>
-                                {cert.course?.title}
-                              </h4>
-                              <p style={{ fontSize: "0.85rem", color: "var(--text-muted)", marginBottom: "12px" }}>
-                                {t("Verification ID:")}{" "}
-                                <span style={{ fontFamily: "monospace", color: "var(--primary-color)", fontWeight: "bold" }}>
-                                  {cert.certificateId}
-                                </span>
-                              </p>
-                              <p style={{ fontSize: "0.85rem", color: "var(--text-muted)" }}>
-                                📅 {t("Date of Issue:")}{" "}
-                                <strong>{new Date(cert.issueDate || cert.createdAt).toLocaleDateString()}</strong>
-                              </p>
+                              <div style={{ padding: "0 20px 20px 20px", display: "flex", gap: "8px" }}>
+                                {hasAr && (
+                                  <button
+                                    onClick={() => {
+                                      const arCert = certificates.find(c => c.course?._id === group.course?._id && c.language === "ar");
+                                      setSelectedCert(arCert);
+                                      setShowCertModal(true);
+                                    }}
+                                    style={{
+                                      flex: 1,
+                                      padding: "10px",
+                                      background: "linear-gradient(135deg, #d4af37, #aa7c11)",
+                                      color: "#fff",
+                                      fontWeight: "bold",
+                                      border: "none",
+                                      borderRadius: "8px",
+                                      cursor: "pointer",
+                                      fontSize: "0.82rem",
+                                      fontFamily: "inherit",
+                                    }}
+                                  >
+                                    🎓 {t("View & Print")} AR
+                                  </button>
+                                )}
+                                {hasEn && (
+                                  <button
+                                    onClick={() => {
+                                      const enCert = certificates.find(c => c.course?._id === group.course?._id && c.language === "en");
+                                      setSelectedCert(enCert);
+                                      setShowCertModal(true);
+                                    }}
+                                    style={{
+                                      flex: 1,
+                                      padding: "10px",
+                                      background: "linear-gradient(135deg, #2563eb, #1a4e9a)",
+                                      color: "#fff",
+                                      fontWeight: "bold",
+                                      border: "none",
+                                      borderRadius: "8px",
+                                      cursor: "pointer",
+                                      fontSize: "0.82rem",
+                                      fontFamily: "inherit",
+                                    }}
+                                  >
+                                    🎓 {t("View & Print")} EN
+                                  </button>
+                                )}
+                              </div>
                             </div>
-                            <div style={{ padding: "0 20px 20px 20px" }}>
-                              <button
-                                onClick={() => {
-                                  setSelectedCert(cert);
-                                  setShowCertModal(true);
-                                }}
-                                style={{
-                                  width: "100%",
-                                  padding: "10px",
-                                  background: "linear-gradient(135deg, #d4af37, #aa7c11)",
-                                  color: "#fff",
-                                  fontWeight: "bold",
-                                  border: "none",
-                                  borderRadius: "8px",
-                                  cursor: "pointer",
-                                  display: "flex",
-                                  alignItems: "center",
-                                  justifyContent: "center",
-                                  gap: "8px",
-                                  boxShadow: "0 4px 10px rgba(212, 175, 55, 0.3)",
-                                  transition: "all 0.3s ease",
-                                }}
-                              >
-                                🎓 {t("View & Print")}
-                              </button>
-                            </div>
-                          </div>
-                        ))}
+                          );
+                        })}
                       </div>
                     )}
                   </div>
@@ -552,6 +602,28 @@ const Profile = () => {
                     <div className="info">
                       <FaSignature />
                       <p>{t(ROLE_LABELS[displayedUser?.role]) || "User"}</p>
+                    </div>
+                    <div className="info">
+                      <HiMiniLanguage />
+                      <div
+                        onClick={toggleProfileLanguage}
+                        style={{ cursor: "pointer", display: "flex", alignItems: "center", gap: "8px" }}
+                      >
+                        <span>{t("Language")}: </span>
+                        <span style={{ fontWeight: 600 }}>
+                          {i18n.language === "en" ? t("English") : t("Arabic")}
+                        </span>
+                        <span style={{
+                          background: "var(--primary-color)",
+                          color: "#fff",
+                          borderRadius: "4px",
+                          padding: "2px 8px",
+                          fontSize: "0.75rem",
+                          fontWeight: 700,
+                        }}>
+                          {i18n.language === "en" ? "AR" : "EN"}
+                        </span>
+                      </div>
                     </div>
                     <div className="info">
                       <FaInbox />

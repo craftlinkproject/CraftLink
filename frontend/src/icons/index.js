@@ -51,7 +51,7 @@ import {
 import { LuWifiOff } from "react-icons/lu";
 import { RiChatSmileAiFill, RiSearch2Line } from "react-icons/ri";
 import { HiDotsHorizontal } from "react-icons/hi";
-import { HiSparkles } from "react-icons/hi2";
+import { HiSparkles, HiMiniLanguage } from "react-icons/hi2";
 import { LuSearchX } from "react-icons/lu";
 import { FaBuysellads } from "react-icons/fa";
 import {
@@ -121,4 +121,5 @@ export {
   MdPrivacyTip,
   GoCodeOfConduct,
   RiSearchLine,
+  HiMiniLanguage,
 };

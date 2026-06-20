@@ -9,7 +9,7 @@ const PAYMOB_API_KEY = process.env.PAYMOB_API_KEY;
 const PAYMOB_INTEGRATION_ID = Number(process.env.PAYMOB_INTEGRATION_ID);
 const PAYMOB_API_URL = process.env.PAYMOB_API_URL;
 const PAYMOB_IFRAME_ID = process.env.PAYMOB_IFRAME_ID;
-const FRONTEND_URL = process.env.FRONTEND_URL || process.env.VITE_FRONTEND_URL || "https://craftlink-cfwv.vercel.app";
+const FRONTEND_URL = process.env.FRONTEND_URL || process.env.VITE_FRONTEND_URL || "http://localhost:5173";
 
 /* ================== HELPER FUNCTION ================== */
 const enrollUserInCourse = async (userId, courseId) => {

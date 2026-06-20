@@ -55,6 +55,11 @@ const Search = lazy(() =>
   import('@pages/website').then(m => ({ default: m.Search }))
 );
 
+const CertificateVerification = lazy(() =>
+  import('@pages/website').then(m => ({ default: m.CertificateVerification }))
+);
+
+
 const Profile = lazy(() =>
   import('@pages/admin').then(m => ({ default: m.Profile }))
 );
@@ -101,6 +106,7 @@ import PrivateRoute from '../PrivateRoute';
 import GuestRoute from '../GuestRoute';
 import { serverUrl as configServerUrl } from '../config/server';
 export const serverUrl = configServerUrl;
+import AISupportChat from './components/AISupportChat';
 
 export default function App() {
   getCreatorCourse();
@@ -116,6 +122,7 @@ export default function App() {
     <>
       <ToastContainer />
       <ScrollToTop />
+      <AISupportChat />
       <Suspense fallback={<LoadingFire />}>
         <Routes>
           <Route path='/' element={<Main />} />
@@ -141,6 +148,7 @@ export default function App() {
           <Route path='timeline' element={<TimeLine />} />
           <Route path='timeline/post/:postId' element={<SinglePost />} />
           <Route path='/playCourse/:courseId' element={<PlayCourse />} />
+          <Route path='/verify-certificate' element={<CertificateVerification />} />
           <Route path='/admin-login' element={<GuestRoute loading={loadingUser}><AdminLogin /></GuestRoute>} />
           <Route path='/dashboard' element={<Dashboard />} />
           <Route path='/instructor-withdraw' element={<PrivateRoute allowedRoles={[2]}><InstructorWithdraw /></PrivateRoute>} />

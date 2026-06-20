@@ -560,5 +560,15 @@
   "No reviews yet. Be the first to review this course!": "لا توجد تقييمات بعد. كن أول من يقيم هذا الكورس!",
   "Review submitted successfully!": "تم إرسال التقييم بنجاح!",
   "Failed to submit review": "فشل إرسال التقييم",
-  "Certificates": "الشهادات"
+  "Certificates": "الشهادات",
+  "Language": "اللغة",
+  "English": "الإنجليزية",
+  "Arabic": "العربية",
+  "Dark Mode": "الوضع الداكن",
+  "Light Mode": "الوضع الفاتح",
+  "Category": "التصنيف",
+  "AI understood": "الفهم الذكي",
+  "Intent": "القصد",
+  "Showing related categories": "عرض الفئات ذات الصلة",
+  "Results for": "نتائج لـ"
 }

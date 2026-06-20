@@ -49,8 +49,11 @@ const PlayCourse = () => {
   const [watchedTime, setWatchedTime] = useState({});
   const [currentLectureProgress, setCurrentLectureProgress] = useState(0);
   const [certificate, setCertificate] = useState(null);
+  const [certificates, setCertificates] = useState([]);
   const [claiming, setClaiming] = useState(false);
   const [showCertModal, setShowCertModal] = useState(false);
+  const [showCelebration, setShowCelebration] = useState(false);
+  const claimTriggeredRef = useRef(false);
 
   const commentsContainerRef = useRef(null);
   const sidebarRef = useRef(null);
@@ -76,16 +79,37 @@ const PlayCourse = () => {
   // ========================================================================
   // CLAIM CERTIFICATE
   // ========================================================================
-  const handleClaimCertificate = async () => {
+  const handleClaimCertificate = async (silent = false) => {
+    if (claimTriggeredRef.current) return;
+    claimTriggeredRef.current = true;
     try {
       setClaiming(true);
+      // Flush all pending progress to backend before claiming
+      await Promise.all(
+        Object.entries(watchedTime).map(([lectureId, secondsWatched]) =>
+          api.post("/api/user/progress", {
+            courseId,
+            lectureId,
+            secondsWatched: Math.floor(secondsWatched),
+          }).catch(() => {})
+        )
+      );
       const res = await api.post("/api/user/certificate/claim", { courseId });
-      setCertificate(res.data.certificate);
-      toast.success(t("Certificate claimed successfully!"));
-      setShowCertModal(true);
+      const certs = res.data.certificates || [];
+      setCertificates(certs);
+      const firstCert = certs.find(c => c.language === i18n.language) || certs[0] || null;
+      setCertificate(firstCert);
+      if (!silent) {
+        toast.success(t("Certificates claimed successfully!"));
+      }
+      if (!res.data.alreadyClaimed) {
+        setShowCelebration(true);
+      }
     } catch (err) {
       console.error(err);
-      toast.error(err.response?.data?.message || t("Failed to claim certificate"));
+      if (!silent) {
+        toast.error(err.response?.data?.message || t("Failed to claim certificate"));
+      }
     } finally {
       setClaiming(false);
     }
@@ -388,6 +412,16 @@ const PlayCourse = () => {
       : 0;
 
   const currentLectureProgressPercent = Math.round(currentLectureProgress);
+
+  // ========================================================================
+  // AUTO-CLAIM CERTIFICATE ON COMPLETION
+  // ========================================================================
+  useEffect(() => {
+    if (courseProgressPercent >= 90 && !certificate && !claiming && !claimTriggeredRef.current) {
+      handleClaimCertificate(false);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [courseProgressPercent]);
 
   // ========================================================================
   // RESPONSIVE
@@ -798,59 +832,29 @@ const PlayCourse = () => {
                     {courseProgressPercent}% completed
                   </span>
 
-                  {/* CERTIFICATE CLAIM & VIEW BUTTON */}
-                  {courseProgressPercent >= 90 && (
-                    <div style={{ marginTop: "16px" }}>
-                      {certificate ? (
-                        <button
-                          onClick={() => setShowCertModal(true)}
-                          className="claim-cert-btn"
-                          style={{
-                            width: "100%",
-                            padding: "10px",
-                            background: "linear-gradient(135deg, #d4af37, #aa7c11)",
-                            color: "#fff",
-                            fontWeight: "bold",
-                            border: "none",
-                            borderRadius: "8px",
-                            cursor: "pointer",
-                            display: "flex",
-                            alignItems: "center",
-                            justifyContent: "center",
-                            gap: "8px",
-                            boxShadow: "0 4px 10px rgba(212, 175, 55, 0.3)",
-                            transition: "all 0.3s ease",
-                          }}
-                        >
-                          🎓 {t("View Certificate")}
-                        </button>
-                      ) : (
-                        <button
-                          onClick={handleClaimCertificate}
-                          disabled={claiming}
-                          className="claim-cert-btn"
-                          style={{
-                            width: "100%",
-                            padding: "10px",
-                            background: "linear-gradient(135deg, #2b7cff, #1a4e9a)",
-                            color: "#fff",
-                            fontWeight: "bold",
-                            border: "none",
-                            borderRadius: "8px",
-                            cursor: claiming ? "not-allowed" : "pointer",
-                            display: "flex",
-                            alignItems: "center",
-                            justifyContent: "center",
-                            gap: "8px",
-                            boxShadow: "0 4px 10px rgba(43, 124, 255, 0.3)",
-                            transition: "all 0.3s ease",
-                          }}
-                        >
-                          {claiming ? t("Claiming...") : `🎓 ${t("Claim Certificate")}`}
-                        </button>
-                      )}
-                    </div>
-                  )}
+                {courseProgressPercent >= 90 && !certificate && (
+                  <button
+                    onClick={() => handleClaimCertificate(false)}
+                    disabled={claiming}
+                    style={{
+                      marginTop: "10px",
+                      padding: "8px 16px",
+                      background: "linear-gradient(135deg, #d4af37, #aa7c11)",
+                      color: "#fff",
+                      fontWeight: 700,
+                      border: "none",
+                      borderRadius: "8px",
+                      cursor: claiming ? "not-allowed" : "pointer",
+                      fontSize: "0.8rem",
+                      fontFamily: "inherit",
+                      opacity: claiming ? 0.7 : 1,
+                      width: "100%",
+                    }}
+                  >
+                    {claiming ? t("Claiming...") : t("Claim Certificate")}
+                  </button>
+                )}
+
                 </div>
               </aside>
 
@@ -871,11 +875,54 @@ const PlayCourse = () => {
           </div>
         </main>
       </section>
-      {/* 🏆 REUSABLE CERTIFICATE MODAL */}
+      {/* 🎉 CELEBRATION POPUP */}
+      {showCelebration && (
+        <div className="celebration-overlay">
+          <div className="celebration-content">
+            <div className="celebration-particles">
+              {Array.from({ length: 30 }).map((_, i) => (
+                <span key={i} className="celebration-particle" style={{
+                  left: `${Math.random() * 100}%`,
+                  animationDelay: `${Math.random() * 2}s`,
+                  animationDuration: `${2 + Math.random() * 3}s`,
+                  fontSize: `${1 + Math.random() * 1.5}rem`,
+                }}>
+                  {["🎉", "🎊", "✨", "🏆", "⭐", "💫", "🌟", "🎓"][i % 8]}
+                </span>
+              ))}
+            </div>
+            <div className="celebration-body">
+              <div className="celebration-icon">🏆</div>
+              <h2>{t("Congratulations!")}</h2>
+              <p>{t("You have successfully completed the course and earned your certificate!")}</p>
+              <div className="celebration-actions">
+                <button
+                  onClick={() => {
+                    setShowCelebration(false);
+                    setShowCertModal(true);
+                  }}
+                  className="celebration-btn-primary"
+                >
+                  🎓 {t("View Certificate")}
+                </button>
+                <button
+                  onClick={() => setShowCelebration(false)}
+                  className="celebration-btn-secondary"
+                >
+                  {t("Close")}
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* 🏆 CERTIFICATE MODAL */}
       <CertificateModal
         isOpen={showCertModal}
         onClose={() => setShowCertModal(false)}
         certificate={certificate}
+        certificates={certificates}
         courseFallback={course}
       />
     </div>

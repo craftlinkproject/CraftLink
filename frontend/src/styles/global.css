@@ -773,6 +773,306 @@ html[dir="rtl"] .nav-link {
 }
 
 /* ===========================
+   HEADER SEARCH
+=========================== */
+.header-search {
+  position: relative;
+  flex: 1;
+  max-width: 360px;
+  margin: 0 1.5rem;
+}
+
+.header-search-icon {
+  position: absolute;
+  left: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  font-size: 1.1rem;
+  color: var(--text-muted);
+  pointer-events: none;
+}
+
+.header-search-input {
+  width: 100%;
+  padding: 8px 36px 8px 36px;
+  border: 2px solid var(--border-color);
+  border-radius: 10px;
+  background: var(--surface-color);
+  color: var(--text-primary);
+  font-size: 0.9rem;
+  outline: none;
+  transition: border-color 0.25s ease;
+  box-sizing: border-box;
+  font-family: inherit;
+}
+
+.header-search-input:focus {
+  border-color: var(--main-color);
+}
+
+.header-search-clear {
+  position: absolute;
+  right: 6px;
+  top: 50%;
+  transform: translateY(-50%);
+  background: none;
+  border: none;
+  color: var(--text-muted);
+  cursor: pointer;
+  padding: 4px;
+  font-size: 1rem;
+  display: flex;
+}
+
+.header-search-dropdown {
+  position: absolute;
+  top: calc(100% + 8px);
+  left: 0;
+  right: 0;
+  background: var(--card-bg);
+  border: 1px solid var(--border-color);
+  border-radius: 12px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
+  z-index: 9999;
+  max-height: 360px;
+  overflow-y: auto;
+  padding: 6px 0;
+}
+
+.header-search-loading {
+  display: flex;
+  justify-content: center;
+  padding: 20px;
+}
+
+.header-search-spinner {
+  width: 24px;
+  height: 24px;
+  border: 3px solid var(--border-color);
+  border-top-color: var(--main-color);
+  border-radius: 50%;
+  animation: hs-spin 0.7s linear infinite;
+}
+
+@keyframes hs-spin {
+  to { transform: rotate(360deg); }
+}
+
+.header-search-empty {
+  padding: 20px;
+  text-align: center;
+  color: var(--text-muted);
+  font-size: 0.9rem;
+}
+
+.header-search-result {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 14px;
+  cursor: pointer;
+  transition: background 0.15s ease;
+}
+
+.header-search-result:hover {
+  background: var(--hover-bg, rgba(128, 128, 128, 0.07));
+}
+
+.header-search-result-avatar {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  object-fit: cover;
+  flex-shrink: 0;
+}
+
+.header-search-result-info {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+.header-search-result-name {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--text-primary);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.header-search-result-email {
+  font-size: 0.75rem;
+  color: var(--text-muted);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.header-search-result-role {
+  padding: 2px 10px;
+  border-radius: 20px;
+  font-size: 0.72rem;
+  font-weight: 600;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+@media (max-width: 768px) {
+  .header-search {
+    max-width: 200px;
+    margin: 0 0.75rem;
+  }
+}
+
+@media (max-width: 576px) {
+  .header-search {
+    max-width: 140px;
+    margin: 0 0.5rem;
+  }
+
+  .header-search-input {
+    padding: 6px 28px 6px 28px;
+    font-size: 0.8rem;
+  }
+}
+
+/* ===========================
+   CELEBRATION POPUP
+=========================== */
+.celebration-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.7);
+  z-index: 99999;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+}
+
+.celebration-content {
+  position: relative;
+  background: var(--card-bg);
+  border-radius: 24px;
+  padding: 48px 40px 36px;
+  max-width: 480px;
+  width: 100%;
+  text-align: center;
+  overflow: hidden;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+  animation: celebration-pop-in 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+@keyframes celebration-pop-in {
+  from {
+    opacity: 0;
+    transform: scale(0.7) translateY(40px);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+}
+
+.celebration-particles {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  overflow: hidden;
+}
+
+.celebration-particle {
+  position: absolute;
+  top: -10%;
+  animation: celebration-fall linear infinite;
+}
+
+@keyframes celebration-fall {
+  0% {
+    transform: translateY(-10%) rotate(0deg);
+    opacity: 1;
+  }
+  100% {
+    transform: translateY(110vh) rotate(720deg);
+    opacity: 0;
+  }
+}
+
+.celebration-body {
+  position: relative;
+  z-index: 1;
+}
+
+.celebration-icon {
+  font-size: 4rem;
+  margin-bottom: 12px;
+  animation: celebration-bounce 1s ease infinite;
+}
+
+@keyframes celebration-bounce {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-12px); }
+}
+
+.celebration-body h2 {
+  font-size: 1.8rem;
+  font-weight: 800;
+  color: var(--text-primary);
+  margin: 0 0 8px;
+}
+
+.celebration-body p {
+  font-size: 1rem;
+  color: var(--text-muted);
+  margin: 0 0 28px;
+  line-height: 1.5;
+}
+
+.celebration-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.celebration-btn-primary {
+  padding: 12px 24px;
+  background: linear-gradient(135deg, #d4af37, #aa7c11);
+  color: #fff;
+  font-weight: 700;
+  border: none;
+  border-radius: 12px;
+  cursor: pointer;
+  font-size: 1rem;
+  font-family: inherit;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  box-shadow: 0 4px 14px rgba(212, 175, 55, 0.35);
+}
+
+.celebration-btn-primary:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(212, 175, 55, 0.5);
+}
+
+.celebration-btn-secondary {
+  padding: 10px 24px;
+  background: transparent;
+  color: var(--text-secondary);
+  font-weight: 600;
+  border: 1px solid var(--border-color);
+  border-radius: 12px;
+  cursor: pointer;
+  font-size: 0.9rem;
+  font-family: inherit;
+  transition: background 0.2s ease;
+}
+
+.celebration-btn-secondary:hover {
+  background: var(--hover-bg, rgba(128, 128, 128, 0.07));
+}
+
+/* ===========================
    section Main Layout Auth
 =========================== */
 .section-main {
@@ -5401,7 +5701,6 @@ html[dir="rtl"] .course-form .edit-lectures {
 .courses-feed .content-header {
   background-color: var(--nav-bg);
   border-radius: 10px;
-  flex: 1;
   overflow-y: hidden;
   padding: 1rem;
   -webkit-border-radius: 20px;
@@ -9719,6 +10018,72 @@ html[dir="rtl"] .main-dash .order .history-w .history-user img {
   color: var(--text-muted);
 }
 
+.withdrawal-actions {
+  display: flex;
+  gap: 1rem;
+  flex-wrap: wrap;
+  margin-top: 16px;
+}
+
+.withdrawal-actions button {
+  padding: 0.7rem 1.5rem;
+  border: none;
+  border-radius: 10px;
+  cursor: pointer;
+  font-weight: 600;
+  font-size: 0.9rem;
+  transition: all 0.25s ease;
+  font-family: inherit;
+  min-width: 100px;
+  letter-spacing: 0.3px;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08);
+}
+
+.btn-approve {
+  background: linear-gradient(135deg, #27ae60, #2ecc71);
+  color: white;
+}
+
+.btn-approve:hover {
+  background: linear-gradient(135deg, #229954, #27ae60);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(39, 174, 96, 0.35);
+}
+
+.btn-approve:active {
+  transform: translateY(0);
+}
+
+.btn-reject {
+  background: linear-gradient(135deg, #e74c3c, #ff6b6b);
+  color: white;
+}
+
+.btn-reject:hover {
+  background: linear-gradient(135deg, #c0392b, #e74c3c);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(231, 76, 60, 0.35);
+}
+
+.btn-reject:active {
+  transform: translateY(0);
+}
+
+.btn-complete {
+  background: linear-gradient(135deg, #3498db, #5dade2);
+  color: white;
+}
+
+.btn-complete:hover {
+  background: linear-gradient(135deg, #2980b9, #3498db);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(52, 152, 219, 0.35);
+}
+
+.btn-complete:active {
+  transform: translateY(0);
+}
+
 .search-container {
   position: relative;
   display: flex;
@@ -9731,7 +10096,7 @@ html[dir="rtl"] .main-dash .order .history-w .history-user img {
 .search-container h2 {
   color: var(--text-secondary);
   text-transform: uppercase;
-  font-size: 30vh;
+  font-size: 10vh;
 }
 
 .search-container .wavy {
@@ -10400,4 +10765,14 @@ html[dir="rtl"] .main-dash .order .history-w .history-user img {
   button {
     display: none !important;
   }
+}
+
+.user-posts-tab {
+  color: var(--text-secondary);
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  align-items: center;
+  justify-content: center;
 }

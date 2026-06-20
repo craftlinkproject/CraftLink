@@ -26,8 +26,8 @@ const connectDb = async () => {
       console.warn("MongoDB disconnected"),
     );
   } catch (error) {
-    // Log connection failure
     console.error("MongoDB connection failed:", error);
+    throw error;
   }
 };
 // Export the connection function for use in app entry point

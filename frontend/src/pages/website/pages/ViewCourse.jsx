@@ -16,7 +16,6 @@ import { api } from "@services/api";
 import axios from "axios";
 import { useSelector } from "react-redux";
 import { useTranslation } from "react-i18next";
-import ChatBot from "../../../components/chatBot";
 const tabs = [
   { id: "Overview", icon: BsFillInfoCircleFill, text: "Overview" },
   { id: "Curriculum", icon: PiMonitorPlayFill, text: "Curriculum" },
@@ -512,7 +511,6 @@ const ViewCourse = () => {
         </div>
       </section>
       <TestimonialsSwiper />
-      <ChatBot />
       <Footer />
     </>
   );

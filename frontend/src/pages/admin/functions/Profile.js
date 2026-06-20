@@ -132,6 +132,12 @@ export const useProfileLogic = () => {
   }, [userId, isMyProfile, currentUser, profileUser]);
 
   const isInstructor = useMemo(() => displayedUser?.role === 2, [displayedUser]);
+  const isCraftsman = useMemo(() => displayedUser?.role === 1, [displayedUser]);
+  const canShowPosts = useMemo(() => {
+    if (!isMyProfile) return false;
+    if (isCraftsman) return certificates.length > 0;
+    return true;
+  }, [isMyProfile, isCraftsman, certificates]);
   const isOwner = useMemo(() => isMyProfile, [isMyProfile]);
 
   const EMPTY_ARRAY = [];
@@ -322,7 +328,10 @@ export const useProfileLogic = () => {
       if (displayedUser.role === 2) { // 2 = Instructor / Trainer
         setActiveTab("courses");
         setProfileTab("profile");
-      } else { // 1 = Craftsman, 3 = Client
+      } else if (displayedUser.role === 1) { // 1 = Craftsman / Professional
+        setActiveTab("purchased");
+        setProfileTab("purchased");
+      } else { // 0 = Admin, 3 = Client
         setActiveTab("posts");
         setProfileTab("posts");
       }
@@ -697,6 +706,8 @@ export const useProfileLogic = () => {
     isMyProfile,
     displayedUser,
     isInstructor,
+    isCraftsman,
+    canShowPosts,
     isOwner,
     creatorCourses,
     filteredCourses,

@@ -5,7 +5,6 @@ const certificateSchema = new mongoose.Schema(
     certificateId: {
       type: String,
       required: true,
-      unique: true,
     },
     user: {
       type: mongoose.Schema.Types.ObjectId,
@@ -15,6 +14,12 @@ const certificateSchema = new mongoose.Schema(
     course: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "Course",
+      required: true,
+    },
+    language: {
+      type: String,
+      enum: ["ar", "en"],
+      default: "en",
       required: true,
     },
     issueDate: {
@@ -27,7 +32,7 @@ const certificateSchema = new mongoose.Schema(
   }
 );
 
-// Prevent duplicate certificates for the same course and user
-certificateSchema.index({ user: 1, course: 1 }, { unique: true });
+// Allow one AR + one EN certificate per user per course
+certificateSchema.index({ user: 1, course: 1, language: 1 }, { unique: true });
 
 export default mongoose.model("Certificate", certificateSchema);

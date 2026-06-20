@@ -10,10 +10,12 @@ import {
   claimCertificate,
   getUserCertificates,
   verifyCertificate,
-  getPublicCertificates
+  getPublicCertificates,
+  searchUsers
 } from "../controller/userController.js"
 import { authMiddleware } from "../middleware/authMiddleware.js"
 const userRouter = express.Router()
+userRouter.get("/search", searchUsers);
 userRouter.get("/getcurrentuser", authMiddleware, getCurrentUser)
 userRouter.get("/purchased", authMiddleware, getPurchasedCourses);
 userRouter.get("/progress/:courseId", authMiddleware, getProgress);

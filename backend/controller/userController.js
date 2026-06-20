@@ -105,6 +105,32 @@ export const getUserBalance = async (req, res) => {
   }
 };
 
+export const searchUsers = async (req, res) => {
+  try {
+    const { q } = req.query;
+    if (!q || !q.trim()) {
+      return res.status(400).json({ message: "Search query is required" });
+    }
+
+    const regex = new RegExp(q.trim(), "i");
+    const users = await User.find({
+      $or: [
+        { name: regex },
+        { email: regex },
+        { description: regex },
+      ],
+    })
+      .select("-password")
+      .limit(20)
+      .sort({ name: 1 });
+
+    return res.status(200).json(users);
+  } catch (error) {
+    console.error("searchUsers error:", error);
+    return res.status(500).json({ message: "Search failed" });
+  }
+};
+
 export const getProgress = async (req, res) => {
   try {
     const userId = req.userId;
@@ -184,7 +210,7 @@ export const getUserById = async (req, res) => {
 // ==================== COURSE COMPLETION CERTIFICATES ====================
 
 /**
- * Claim a course completion certificate if progress >= 90%
+ * Claim course completion certificates (Arabic + English) if progress >= 90%
  */
 export const claimCertificate = async (req, res) => {
   try {
@@ -195,15 +221,16 @@ export const claimCertificate = async (req, res) => {
       return res.status(400).json({ message: "User ID and Course ID are required" });
     }
 
-    // 1. Check if user already has a certificate for this course
-    const existingCert = await Certificate.findOne({ user: userId, course: courseId })
-      .populate("course", "title category level thumbnail")
-      .populate("user", "name photoUrl");
+    // 1. Check if both certificates already exist
+    const existingCerts = await Certificate.find({ user: userId, course: courseId });
+    const hasAr = existingCerts.some(c => c.language === "ar");
+    const hasEn = existingCerts.some(c => c.language === "en");
 
-    if (existingCert) {
+    if (hasAr && hasEn) {
       return res.status(200).json({
-        message: "Certificate already claimed",
-        certificate: existingCert,
+        message: "Certificates already claimed",
+        certificates: existingCerts,
+        alreadyClaimed: true,
       });
     }
 
@@ -239,36 +266,62 @@ export const claimCertificate = async (req, res) => {
       });
     }
 
-    // 5. Generate a unique, premium certificate ID
+    // 5. Generate shared certificate ID
     const randomChars = Math.random().toString(36).substr(2, 9).toUpperCase();
     const tsCode = Date.now().toString().slice(-4);
     const certificateId = `CL-CERT-${randomChars}-${tsCode}`;
 
-    // 6. Create and save certificate
-    const certificate = new Certificate({
-      certificateId,
-      user: userId,
-      course: courseId,
-    });
+    // 6. Create both certificates (Arabic + English)
+    const languageOrder = ["ar", "en"];
+    const certificates = [...existingCerts];
 
-    await certificate.save();
-    await certificate.populate({
-      path: "course",
-      select: "title category level thumbnail creator",
-      populate: {
-        path: "creator",
-        select: "name",
-      },
-    });
-    await certificate.populate("user", "name photoUrl");
+    for (const lang of languageOrder) {
+      if (certificates.some(c => c.language === lang)) continue;
+
+      const cert = new Certificate({
+        certificateId,
+        user: userId,
+        course: courseId,
+        language: lang,
+      });
+
+      try {
+        await cert.save();
+        await cert.populate({
+          path: "course",
+          select: "title category level thumbnail creator",
+          populate: {
+            path: "creator",
+            select: "name",
+          },
+        });
+        await cert.populate("user", "name photoUrl");
+        certificates.push(cert);
+      } catch (saveErr) {
+        // If duplicate key error, the cert was already created by another request
+        const existing = await Certificate.findOne({ user: userId, course: courseId, language: lang })
+          .populate({
+            path: "course",
+            select: "title category level thumbnail creator",
+            populate: { path: "creator", select: "name" },
+          })
+          .populate("user", "name photoUrl");
+        if (existing) {
+          certificates.push(existing);
+        } else {
+          throw saveErr;
+        }
+      }
+    }
 
     return res.status(201).json({
-      message: "Certificate successfully claimed!",
-      certificate,
+      message: "Certificates successfully claimed!",
+      certificates,
+      alreadyClaimed: false,
     });
   } catch (error) {
     console.error("claimCertificate error:", error);
-    return res.status(500).json({ message: "Failed to claim certificate" });
+    return res.status(500).json({ message: error.message || "Failed to claim certificate" });
   }
 };
 

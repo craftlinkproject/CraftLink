@@ -18,7 +18,6 @@ import Footer from "../../../components/Footer";
 import HeroImgSection from "../../../components/HeroImgSection";
 import useGetPublishedCourse from "../../../customHooks/useGetPublishedCourse";
 import { useSelector } from "react-redux";
-import ChatBot from "../../../components/chatBot";
 import PopularCourses from "../../../components/PopularCourses";
 import { useTranslation } from "react-i18next";
 const features = [
@@ -118,7 +117,6 @@ const Main = () => {
         <PopularCourses courses={courses} />
 
         <TestimonialsSwiper />
-        <ChatBot />
         <Footer />
       </main>
     </>

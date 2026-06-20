@@ -89,7 +89,8 @@ const Dashboard = () => {
             }
         } catch (error) {
             console.error("Error approving withdrawal:", error);
-            toast.error("failed to approve withdrawal");
+            const msg = error.response?.data?.message || "failed to approve withdrawal";
+            toast.error(msg);
         }
     };
 
@@ -119,7 +120,8 @@ const Dashboard = () => {
             }
         } catch (error) {
             console.error("Error rejecting withdrawal:", error);
-            toast.error("failed to reject withdrawal");
+            const msg = error.response?.data?.message || "failed to reject withdrawal";
+            toast.error(msg);
         }
     };
 
@@ -139,7 +141,8 @@ const Dashboard = () => {
             }
         } catch (error) {
             console.error("Error completing withdrawal:", error);
-            toast.error("failed to complete withdrawal");
+            const msg = error.response?.data?.message || "failed to complete withdrawal";
+            toast.error(msg);
         }
     };
 
@@ -226,7 +229,7 @@ const Dashboard = () => {
                             {selectedWithdrawal.status === "pending" && (
                                 <>
                                     <button
-                                        className="btn-approved"
+                                        className="btn-approve"
                                         onClick={() => {
                                             handleApproveWithdrawal(selectedWithdrawal._id)
                                             setShowWithdrawal(false)
@@ -236,7 +239,7 @@ const Dashboard = () => {
                                     </button>
 
                                     <button
-                                        className="btn-rejected"
+                                        className="btn-reject"
                                         onClick={() => {
                                             handleRejectWithdrawal(selectedWithdrawal._id)
                                             setShowWithdrawal(false)
@@ -249,12 +252,11 @@ const Dashboard = () => {
                             )}
                             {selectedWithdrawal.status === "approved" && (
                                 <button
-                                    className="btn-rejected"
+                                    className="btn-complete"
                                     onClick={() => {
                                         handleCompleteWithdrawal(selectedWithdrawal._id)
                                         setShowWithdrawal(false)
-                                    }
-                                    }
+                                    }}
                                 >
                                     {t("confirm")}
                                 </button>

@@ -41,20 +41,21 @@ const Footer = () => {
           <h4>{t("Quick Links")}</h4>
           <ul>
             <li onClick={()=>navigate("/")}>{t("home")}</li>
-            <li>{t("Courses")}</li>
-            <li>{t("Craftsmen")}</li>
-            <li>{t("Categories")}</li>
+            <li onClick={()=>navigate("/verify-certificate")}>{t("Verify Certificate")}</li>
+            <li onClick={() => navigate("/search")}>{t("Courses")}</li>
+            <li onClick={() => navigate("/search")}>{t("Craftsmen")}</li>
+            <li onClick={() => navigate("/search")}>{t("Categories")}</li>
             <li onClick={()=>navigate("/about")}>{t("About Us")}</li>
           </ul>
         </div>
         <div className="footer-col">
           <h4>{t("Popular Crafts")}</h4>
           <ul>
-            <li>{t("Carpentry")}</li>
-            <li>{t("Plumbing")}</li>
-            <li>{t("Electricity")}</li>
-            <li>{t("Painting")}</li>
-            <li>{t("Metal Works")}</li>
+            <li onClick={() => navigate(`/search?q=${encodeURIComponent(t("Carpentry"))}`)}>{t("Carpentry")}</li>
+            <li onClick={() => navigate(`/search?q=${encodeURIComponent(t("Plumbing"))}`)}>{t("Plumbing")}</li>
+            <li onClick={() => navigate(`/search?q=${encodeURIComponent(t("Electricity"))}`)}>{t("Electricity")}</li>
+            <li onClick={() => navigate(`/search?q=${encodeURIComponent(t("Painting"))}`)}>{t("Painting")}</li>
+            <li onClick={() => navigate(`/search?q=${encodeURIComponent(t("Metal Works"))}`)}>{t("Metal Works")}</li>
           </ul>
         </div>
         <div className="footer-col">
