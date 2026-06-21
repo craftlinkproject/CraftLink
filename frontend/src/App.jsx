@@ -3,6 +3,7 @@ import React, { Suspense, lazy } from "react";
 import { Route, Routes } from 'react-router-dom';
 import { ToastContainer } from 'react-toastify';
 import 'react-photo-view/dist/react-photo-view.css';
+import FirebaseRedirectHandler from './components/FirebaseRedirectHandler';
 // ===================== Pages Imports ===================== //
 
 const SignUp = lazy(() =>
@@ -120,6 +121,7 @@ export default function App() {
 
   return (
     <>
+      <FirebaseRedirectHandler />
       <ToastContainer />
       <ScrollToTop />
       <AISupportChat />
