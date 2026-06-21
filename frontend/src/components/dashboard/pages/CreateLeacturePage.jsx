@@ -1,6 +1,5 @@
 // CreateLecturePage.jsx
 import React, { useState, useEffect } from "react";
-import axios from "axios";
 import { useParams } from "react-router-dom";
 import { toast } from "react-toastify";
 import AuthInput from "../../AuthInput";
@@ -13,9 +12,6 @@ import { api } from "@services/api";
 import { FaPlay, } from "react-icons/fa";
 import { IoIosLock } from "react-icons/io";
 import { useTranslation } from "react-i18next";
-const UPLOAD_PRESET = "CraftLink_Video";
-const CLOUDINARY_URL =
-  "https://api.cloudinary.com/v1_1/dhynqaw42/video/upload?resource_type=video";
 
 const CreateLecturePage = () => {
   const { handleFocus, handleBlur } = useInputAnimation();
@@ -42,11 +38,9 @@ const CreateLecturePage = () => {
 
     const formData = new FormData();
     formData.append("file", videoFile);
-    formData.append("upload_preset", UPLOAD_PRESET);
-    formData.append("folder", "craftlink/video");
 
     try {
-      const res = await axios.post(CLOUDINARY_URL, formData, {
+      const res = await api.post("/api/upload/video", formData, {
         headers: { "Content-Type": "multipart/form-data" },
         onUploadProgress: (progressEvent) => {
           const percent = Math.round(
@@ -56,10 +50,8 @@ const CreateLecturePage = () => {
         },
       });
 
-      // Don't setVideoUrl here, let reset handle clearing preview
-
       return {
-        url: res.data.secure_url,
+        url: res.data.url,
         duration: res.data.duration,
       };
     } catch (err) {
