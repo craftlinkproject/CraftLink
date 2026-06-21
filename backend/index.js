@@ -33,23 +33,13 @@ socket.on("connect", () => {
 socket.on("error", (err) => {
   console.log("SMTP BLOCKED:", err.message);
 });
-const allowedOrigins = [
-  "http://localhost:5173",
-  "https://craft-link-eta.vercel.app",
-];
-
-app.use(cors({
+const corsOptions = {
   origin: ["http://localhost:5173", "https://craft-link-eta.vercel.app"],
   credentials: true,
-}));
-app.use((req, res, next) => {
-  res.header("Access-Control-Allow-Origin", "https://craft-link-eta.vercel.app");
-  res.header("Access-Control-Allow-Credentials", "true");
-  res.header("Access-Control-Allow-Methods", "GET, POST, PATCH, DELETE, PUT, OPTIONS");
-  res.header("Access-Control-Allow-Headers", "Content-Type, Authorization, Cookie");
-  if (req.method === "OPTIONS") return res.sendStatus(204);
-  next();
-});
+  methods: ["GET", "POST", "PATCH", "DELETE", "PUT", "OPTIONS"],
+  allowedHeaders: ["Content-Type", "Authorization", "Cookie"],
+};
+app.use(cors(corsOptions));
 app.set("trust proxy", 1);
 app.use("/api/auth", authRouter);
 app.use("/api/user", userRouter);
