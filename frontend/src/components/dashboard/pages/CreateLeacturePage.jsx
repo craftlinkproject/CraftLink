@@ -42,6 +42,7 @@ const CreateLecturePage = () => {
     try {
       const res = await api.post("/api/upload/video", formData, {
         headers: { "Content-Type": "multipart/form-data" },
+        timeout: 300000,
         onUploadProgress: (progressEvent) => {
           const percent = Math.round(
             (progressEvent.loaded * 100) / progressEvent.total
