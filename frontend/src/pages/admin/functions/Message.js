@@ -289,7 +289,7 @@ export const useMessageLogic = () => {
     //   real-time events without requiring a full page refresh.
     useEffect(() => {
         if (!currentUser._id) return;
-        const socket = io("https://craftlink-production.up.railway.app", {
+        const socket = io("/", {
             withCredentials: true,
             reconnection: true,
             reconnectionAttempts: Infinity,
