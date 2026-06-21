@@ -1,9 +1,9 @@
 import React, { useState, useEffect, useRef, useCallback } from "react";
-import axios from "axios";
 import { VscRobot } from "react-icons/vsc";
 import { IoSend } from "react-icons/io5";
 import { RiChatSmile3Fill, RiCloseFill } from "react-icons/ri";
 import { useTranslation } from "react-i18next";
+import { api } from "@services/api";
 
 const STORAGE_KEY = "ai_support_messages";
 
@@ -52,7 +52,7 @@ const AISupportChat = () => {
     setLoading(true);
 
     try {
-      const res = await axios.post("/api/support/chat", { message: msg });
+      const res = await api.post("/api/support/chat", { message: msg });
       addMessage("bot", res.data.reply);
     } catch {
       addMessage("bot", isRtl

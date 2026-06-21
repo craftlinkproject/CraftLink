@@ -1,5 +1,4 @@
 import React, { useState, useRef, useEffect, useMemo, useCallback } from "react";
-import axios from "axios";
 import { useSelector } from "react-redux";
 import { useSearchParams } from "react-router-dom";
 import Fuse from "fuse.js";
@@ -12,6 +11,7 @@ import { HiMiniLanguage } from "react-icons/hi2";
 import { IoClose } from "react-icons/io5";
 import { RiSparkling2Fill } from "react-icons/ri";
 import { useTranslation } from "react-i18next";
+import { api } from "@services/api";
 
 const AICourseSearch = () => {
   const { i18n, t } = useTranslation();
@@ -112,7 +112,7 @@ const AICourseSearch = () => {
       return;
     }
     try {
-      const res = await axios.post("/api/search", { query: value });
+      const res = await api.post("/api/search", { query: value });
       const data = res.data;
       setResults(data.results || []);
       setSuggestions(data.suggestions || []);
