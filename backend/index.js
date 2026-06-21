@@ -42,6 +42,14 @@ app.use(cors({
   origin: ["http://localhost:5173", "https://craft-link-eta.vercel.app"],
   credentials: true,
 }));
+app.use((req, res, next) => {
+  res.header("Access-Control-Allow-Origin", "https://craft-link-eta.vercel.app");
+  res.header("Access-Control-Allow-Credentials", "true");
+  res.header("Access-Control-Allow-Methods", "GET, POST, PATCH, DELETE, PUT, OPTIONS");
+  res.header("Access-Control-Allow-Headers", "Content-Type, Authorization, Cookie");
+  if (req.method === "OPTIONS") return res.sendStatus(204);
+  next();
+});
 app.set("trust proxy", 1);
 app.use("/api/auth", authRouter);
 app.use("/api/user", userRouter);
@@ -91,6 +99,12 @@ const startServer = async () => {
     };
     process.on("SIGINT", () => shutdown("SIGINT"));
     process.on("SIGTERM", () => shutdown("SIGTERM"));
+    process.on("uncaughtException", (err) => {
+      console.error("Uncaught Exception:", err);
+    });
+    process.on("unhandledRejection", (err) => {
+      console.error("Unhandled Rejection:", err);
+    });
   } catch (err) {
     console.error("DB Failed", err);
     process.exit(1);
