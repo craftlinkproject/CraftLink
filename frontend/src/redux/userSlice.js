@@ -26,6 +26,7 @@ const userSlice = createSlice({
     logout: (state) => {
       state.userData = null;
       localStorage.removeItem("userData");
+      sessionStorage.removeItem("token");
     },
 
     setUserCache: (state, action) => {

@@ -19,6 +19,7 @@ export const useSubmitAuth = (setLoading) => {
       );
 
       const user = res.data.user || res.data;
+      if (res.data.token) sessionStorage.setItem("token", res.data.token);
 
       dispatch(setUserData(user));
 

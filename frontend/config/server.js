@@ -11,7 +11,7 @@ const getFallbackServerUrl = () => {
       return "http://localhost:8000";
     }
   }
-  return "";
+  return "https://craftlink-production.up.railway.app";
 };
 
 const DEFAULT_SERVER_URL = getFallbackServerUrl();

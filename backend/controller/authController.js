@@ -58,7 +58,7 @@ export const signUp = async (req, res) => {
     });
     const token = await genToken(user._id);
     setAuthCookie(res, token);
-    return res.status(201).json(sanitizeUser(user));
+    return res.status(201).json({ user: sanitizeUser(user), token });
   } catch (error) {
     console.error(
       "signUp error:",
@@ -93,7 +93,7 @@ export const login = async (req, res) => {
     }
     const token = await genToken(user._id);
     setAuthCookie(res, token);
-    return res.status(200).json(sanitizeUser(user));
+    return res.status(200).json({ user: sanitizeUser(user), token });
   } catch (error) {
     console.error(
       "login error:",
@@ -133,7 +133,7 @@ export const adminLogin = async (req, res) => {
 
     const token = await genToken(user._id);
     setAuthCookie(res, token);
-    return res.status(200).json(sanitizeUser(user));
+    return res.status(200).json({ user: sanitizeUser(user), token });
   } catch (error) {
     console.error("adminLogin error:", error && error.message ? error.message : error);
     return res.status(500).json({ message: "Admin login failed" });
@@ -294,7 +294,7 @@ export const googleLogin = async (req, res) => {
         .json({ message: "User not found. Please sign up first." });
     const token = await genToken(user._id);
     setAuthCookie(res, token);
-    return res.status(200).json(sanitizeUser(user));
+    return res.status(200).json({ user: sanitizeUser(user), token });
   } catch (error) {
     console.error(
       "googleLogin error:",
@@ -323,7 +323,7 @@ export const googleSignUp = async (req, res) => {
     user = await User.create({ name, email, role });
     const token = await genToken(user._id);
     setAuthCookie(res, token);
-    return res.status(201).json(sanitizeUser(user));
+    return res.status(201).json({ user: sanitizeUser(user), token });
   } catch (error) {
     console.error(
       "googleSignUp error:",

@@ -1,17 +1,23 @@
 // src/services/api.js
 import axios from "axios";
 import { serverUrl } from "@config/server";
-// Base URL: prefer configured serverUrl, fall back to localhost for dev
-// const BASE_URL = serverUrl || "";
-const BASE_URL = serverUrl || "";
-// Create an axios instance with sane defaults
+const BASE_URL = serverUrl || "https://craftlink-production.up.railway.app";
 export const api = axios.create({
   baseURL: BASE_URL,
-  withCredentials: true, // enable cookies for auth flows
-  timeout: 25000, // 10s timeout for requests
+  withCredentials: true,
+  timeout: 25000,
   headers: {
     Accept: "application/json",
     "Content-Type": "application/json",
   },
 });
+
+api.interceptors.request.use((config) => {
+  const token = sessionStorage.getItem("token");
+  if (token) {
+    config.headers.Authorization = `Bearer ${token}`;
+  }
+  return config;
+});
+
 export default api;

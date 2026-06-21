@@ -19,6 +19,7 @@ export const useGoogleAuth = () => {
       const payload = { name: user.displayName, email: user.email };
       if (role) payload.role = role;
       const res = await api.post(`/api/auth/${endpoint}`, payload, { withCredentials: true });
+      if (res.data.token) sessionStorage.setItem("token", res.data.token);
       dispatch(setUserData(res.data));
       toast.success(`${endpoint.includes("signup") ? "Google Sign-Up" : "Login"} successful`);
       navigate("/profile");

@@ -12,10 +12,12 @@ import User from "../model/userModel.js";
  */
 export const authMiddleware = async (req, res, next) => {
   try {
-    // Retrieve token from cookies
-    const token = req.cookies.token;
+    let token = req.cookies.token;
+    const authHeader = req.headers.authorization;
+    if (!token && authHeader && authHeader.startsWith("Bearer ")) {
+      token = authHeader.split(" ")[1];
+    }
     if (!token) {
-      // No token found, user is not authenticated
       console.log("No token in request");
       return res.status(401).json({ message: "Not authenticated" });
     }

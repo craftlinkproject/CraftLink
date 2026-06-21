@@ -14,7 +14,7 @@ const useCurrentUser = () => {
   const [loading, setLoading] = useState(true);
   const [errorMessage, setErrorMessage] = useState(null);
   useEffect(() => {
-    const tokenExists = document.cookie.includes("token=");
+    const tokenExists = document.cookie.includes("token=") || sessionStorage.getItem("token");
     if (!tokenExists) {
       setLoading(false);
       return;
