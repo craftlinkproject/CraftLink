@@ -98,7 +98,8 @@ const Header = () => {
           <h2>{t("craflink")}<span>.</span></h2>
         </div>
 
-        {/* Persistent Search */}
+        {/* Persistent Search - logged in only */}
+        {userData && (
         <div className="header-search" ref={searchRef}>
           <RiSearch2Line className="header-search-icon" />
           <input
@@ -159,6 +160,7 @@ const Header = () => {
             </div>
           )}
         </div>
+        )}
 
         <ul>
           <li>
