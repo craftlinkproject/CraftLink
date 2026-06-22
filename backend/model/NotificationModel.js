@@ -23,7 +23,9 @@ const notificationSchema = new mongoose.Schema(
       required: true,
     },
     title: { type: String, required: true },
+    titleAr: { type: String, default: "" },
     message: { type: String, default: "" },
+    messageAr: { type: String, default: "" },
     link: { type: String, default: "" },
     actor: {
       type: mongoose.Schema.Types.ObjectId,

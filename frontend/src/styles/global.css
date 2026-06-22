@@ -4793,6 +4793,7 @@ html[dir="rtl"] #content nav::before {
 #content nav .notification {
   font-size: 20px;
   position: relative;
+  color: var(--text-secondary);
 }
 
 #content nav .notification .num {

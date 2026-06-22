@@ -1,5 +1,6 @@
 import React, { useState, useRef, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
+import { useTranslation } from "react-i18next";
 import { useNotifications } from "../../context/NotificationContext";
 import userAvatar from "../../assets/img/userAvatar.jpg";
 import { IoNotifications, IoCheckmark, IoTrashOutline, IoClose } from "react-icons/io5";
@@ -17,6 +18,8 @@ const TYPE_ICONS = {
 
 function NotificationDropdown({ open, onClose }) {
   const { notifications, unreadCount, markAsRead, deleteAllNotifications } = useNotifications();
+  const { i18n } = useTranslation();
+  const isAr = i18n.language?.startsWith("ar");
   const navigate = useNavigate();
   const ref = useRef(null);
   const [animatingOut, setAnimatingOut] = useState(false);
@@ -69,7 +72,7 @@ function NotificationDropdown({ open, onClose }) {
         className={`notification-dropdown ${animatingOut ? "closing" : ""}`}
       >
       <div className="notification-dropdown-header">
-        <h3>Notifications</h3>
+        <h3>{isAr ? "الإشعارات" : "Notifications"}</h3>
         <div className="notification-dropdown-actions">
           {notifications.length > 0 && (
             <button className="notification-action-btn" onClick={() => { deleteAllNotifications(); handleClose(); }} title="Remove all">
@@ -90,7 +93,7 @@ function NotificationDropdown({ open, onClose }) {
         {notifications.length === 0 ? (
           <div className="notification-empty">
             <IoNotifications className="notification-empty-icon" />
-            <p>No notifications yet</p>
+            <p>{isAr ? "لا توجد إشعارات" : "No notifications yet"}</p>
           </div>
         ) : (
           notifications.slice(0, 20).map((n) => {
@@ -109,8 +112,8 @@ function NotificationDropdown({ open, onClose }) {
                   )}
                 </div>
                 <div className="notification-item-content">
-                  <p className="notification-item-title">{n.title}</p>
-                  <p className="notification-item-message">{n.message}</p>
+                  <p className="notification-item-title">{isAr && n.titleAr ? n.titleAr : n.title}</p>
+                  <p className="notification-item-message">{isAr && n.messageAr ? n.messageAr : n.message}</p>
                   <span className="notification-item-time">{timeAgo(n.createdAt)}</span>
                 </div>
                 {!n.read && <span className="notification-item-dot" />}

@@ -48,7 +48,7 @@ export const markAsRead = async (req, res) => {
   }
 };
 
-export const createNotification = async ({ recipient, type, title, message, link, actor, io, dedupKey }) => {
+export const createNotification = async ({ recipient, type, title, titleAr, message, messageAr, link, actor, io, dedupKey }) => {
   try {
     let notification;
     let isUpdate = false;
@@ -63,7 +63,9 @@ export const createNotification = async ({ recipient, type, title, message, link
 
       if (existing) {
         existing.message = message;
+        existing.messageAr = messageAr || existing.messageAr;
         existing.title = title;
+        existing.titleAr = titleAr || existing.titleAr;
         existing.link = link || existing.link;
         existing.read = false;
         existing.createdAt = new Date();
@@ -78,7 +80,9 @@ export const createNotification = async ({ recipient, type, title, message, link
         recipient,
         type,
         title,
+        titleAr,
         message,
+        messageAr,
         link,
         actor,
       });

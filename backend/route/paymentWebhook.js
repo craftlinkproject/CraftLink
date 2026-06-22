@@ -47,11 +47,15 @@ router.post("/paymob-webhook", async (req, res) => {
       // Notify course creator
       if (courseUpdate?.creator) {
         const enrolledUser = await User.findById(payment.user).select("name");
+        const userName = enrolledUser?.name || "A user";
+        const courseTitle = courseUpdate.title || "";
         createNotification({
           recipient: courseUpdate.creator,
           type: "enrollment",
           title: "New Enrollment",
-          message: `${enrolledUser?.name || "A user"} enrolled in your course "${courseUpdate.title}"`,
+          titleAr: "تسجيل جديد",
+          message: `${userName} enrolled in your course "${courseTitle}"`,
+          messageAr: `${userName} مسجل في كورس "${courseTitle}"`,
           link: `/course/${courseUpdate.slug || courseUpdate._id}`,
           actor: payment.user,
           io,

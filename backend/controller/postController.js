@@ -104,11 +104,14 @@ export const likePost = async (req, res) => {
     if (!isLiked && post.author._id.toString() !== userId) {
       const io = req.app.get("io");
       const liker = await User.findById(userId).select("name photoUrl");
+      const likerName = liker?.name || "Someone";
       createNotification({
         recipient: post.author._id,
         type: "like",
         title: "New Like",
-        message: `${liker?.name || "Someone"} liked your post`,
+        titleAr: "إعجاب جديد",
+        message: `${likerName} liked your post`,
+        messageAr: `${likerName} أعجب بمنشورك`,
         link: `/timeline/post/${postId}`,
         actor: userId,
         io,
@@ -179,11 +182,16 @@ export const addComment = async (req, res) => {
       const msg = commentCount > 1
         ? `${user.name} commented again on your post (${commentCount} comments)`
         : `${user.name} commented on your post: "${text.substring(0, 50)}${text.length > 50 ? "..." : ""}"`;
+      const msgAr = commentCount > 1
+        ? `${user.name} علق مرة أخرى على منشورك (${commentCount} تعليقات)`
+        : `${user.name} علق على منشورك: "${text.substring(0, 50)}${text.length > 50 ? "..." : ""}"`;
       createNotification({
         recipient: post.author._id,
         type: "comment",
         title: "New Comment",
+        titleAr: "تعليق جديد",
         message: msg,
+        messageAr: msgAr,
         link: `/timeline/post/${postId}`,
         actor: userId,
         io,
