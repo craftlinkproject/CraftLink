@@ -4,7 +4,7 @@ import { FaStar } from "react-icons/fa";
 import { BsClockHistory } from "react-icons/bs";
 import { useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
-import { getCategoryLabel, getCategoryId } from "../constants/categories";
+import { getCategoryLabel, getCategoryId, getLevelLabel, getLevelId } from "../constants/categories";
 const CourseCard = ({ image, title, instructor, tag, hours, lectures, level, price, courseId, reviews }) => {
     const navigate = useNavigate()
     const { i18n, t } = useTranslation();
@@ -41,7 +41,7 @@ const CourseCard = ({ image, title, instructor, tag, hours, lectures, level, pri
             <div className="content">
                 <h3 className="clamp-v clamp-v1" title={title}>{title}</h3>
                 <p className="clamp-1" title={instructor}>{t("By")} : {instructor}</p>
-                <p className="clamp-1" title={instructor}>{lectures} {t("Lectures")} . {t(level)}</p>
+                <p className="clamp-1" title={instructor}>{lectures} {t("Lectures")} . {getLevelLabel(getLevelId(level), i18n.language)}</p>
                 <h3 className="clamp-1" title={title}>{price} {t("EGP")}</h3>
 
             </div>

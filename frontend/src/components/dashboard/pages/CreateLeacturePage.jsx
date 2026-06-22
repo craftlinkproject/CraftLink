@@ -279,10 +279,6 @@ const CreateLecturePage = () => {
             />
 
             <div className="checkbox">
-              <label htmlFor="checkbox1" className="checkbox__label">
-                <p>{t("Free Preview Lecture")}</p>
-                <span className="checkbox__custom"></span>
-              </label>
               <input
                 id="checkbox1"
                 className="checkbox__input"
@@ -290,6 +286,10 @@ const CreateLecturePage = () => {
                 checked={isPreviewFree}
                 onChange={(e) => setIsPreviewFree(e.target.checked)}
               />
+              <label htmlFor="checkbox1" className="checkbox__label">
+                <p>{t("Free Preview Lecture")}</p>
+                <span className="checkbox__custom"></span>
+              </label>
             </div>
             {editingLecture ? (
               <>

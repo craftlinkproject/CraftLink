@@ -158,7 +158,7 @@ const ViewCourse = () => {
         const { data } = await api.get(`/api/course/getcourse/${courseId}`);
         setCourse(data);
 
-        const firstFree = data.lectures?.find(l => l.isFree);
+        const firstFree = data.lectures?.find(l => l.isPreviewFree);
         if (firstFree) {
           setCurrentVideo(firstFree.videoUrl);
         }

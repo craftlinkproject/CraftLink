@@ -11,6 +11,7 @@ import { store, persistor } from "./redux/store";
 
 // ===================== Context ===================== //
 import { ThemeProvider } from "./context/ThemeContext";
+import { NotificationProvider } from "./context/NotificationContext";
 
 // ===================== App ===================== //
 import "./locales/i18n";
@@ -33,7 +34,9 @@ root.render(
       <Provider store={store}>
         <PersistGate loading={<div>Loading...</div>} persistor={persistor}>
           <ThemeProvider>
-            <App />
+            <NotificationProvider>
+              <App />
+            </NotificationProvider>
           </ThemeProvider>
         </PersistGate>
       </Provider>

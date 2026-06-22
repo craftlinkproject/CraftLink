@@ -18,6 +18,7 @@ import paymentWebhook from "./route/paymentWebhook.js";
 import searchRoutes from "./route/searchRoutes.js";
 import supportRoutes from "./route/supportRoutes.js";
 import uploadRouter from "./route/uploadRoute.js";
+import notificationRouter from "./route/notificationRoute.js";
 import { initializeSocket } from "./sockets/index.js";
 const app = express();
 const port = Number(process.env.PORT) || 8000;
@@ -53,6 +54,7 @@ app.use("/api/post", postRouter);
 app.use("/api", searchRoutes);
 app.use("/api/support", supportRoutes);
 app.use("/api/upload", uploadRouter);
+app.use("/api/notifications", notificationRouter);
 app.get("/", (req, res) => res.send("Server Running 🚀"));
 const server = http.createServer(app);
 const io = new Server(server, {

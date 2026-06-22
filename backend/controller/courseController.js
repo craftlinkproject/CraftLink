@@ -5,6 +5,7 @@ import User from "../model/userModel.js";
 import Payment from "../model/paymentModel.js";
 import Review from "../model/reviewModel.js";
 import mongoose from "mongoose";
+import { createNotification } from "./notificationController.js";
 /**
  * Create a new course
  * @param {object} req - Express request (body: title, subTitle, description, category, level, price, thumbnail)
@@ -607,6 +608,7 @@ export const addCourseReview = async (req, res) => {
 
     // Check if the user already reviewed this course
     let review = await Review.findOne({ user: userId, course: courseId });
+    let isNewReview = false;
 
     if (review) {
       // Update existing review
@@ -614,6 +616,7 @@ export const addCourseReview = async (req, res) => {
       review.comment = comment.trim();
       await review.save();
     } else {
+      isNewReview = true;
       // Create new review
       review = await Review.create({
         user: userId,
@@ -631,6 +634,20 @@ export const addCourseReview = async (req, res) => {
 
     // Populate user info for the returned review
     const populatedReview = await Review.findById(review._id).populate("user", "name photoUrl role");
+
+    // Notify course creator on new review
+    if (isNewReview && course.creator.toString() !== userId) {
+      const io = req.app.get("io");
+      createNotification({
+        recipient: course.creator,
+        type: "review",
+        title: "New Review",
+        message: `${populatedReview.user.name} left a ${rating}-star review on your course "${course.title}"`,
+        link: `/course/${course.slug || course._id}`,
+        actor: userId,
+        io,
+      });
+    }
 
     return res.status(200).json({
       message: "Review submitted successfully",

@@ -133,4 +133,23 @@ export const CATEGORY_GROUPS = [
   },
 ];
 
+export const LEVELS = [
+  { id: "Beginner", en: "Beginner", ar: "مبتدئ" },
+  { id: "Intermediate", en: "Intermediate", ar: "متوسط" },
+  { id: "Advanced", en: "Advanced", ar: "متقدم" },
+];
+
+const LEVEL_MAP = Object.fromEntries(LEVELS.map((l) => [l.id, l]));
+
+export function getLevelLabel(id, language) {
+  const level = LEVEL_MAP[id];
+  if (!level) return id;
+  return language === "ar" ? level.ar : level.en;
+}
+
+export function getLevelId(label) {
+  const found = LEVELS.find((l) => l.en === label || l.ar === label || l.id === label);
+  return found ? found.id : label;
+}
+
 export default CATEGORIES;

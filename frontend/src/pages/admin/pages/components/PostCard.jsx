@@ -24,7 +24,7 @@ const PostCard = ({ post, currentUserId, onPostDeleted }) => {
     const [loading, setLoading] = useState(false);
     const [showMenu, setShowMenu] = useState(false);
 
-    const isAuthor = post.author._id === currentUserId;
+    const isAuthor = post.author?._id === currentUserId;
 
     const handleLike = async () => {
         try {
@@ -102,13 +102,13 @@ const PostCard = ({ post, currentUserId, onPostDeleted }) => {
             <div className="post-card-header">
                 <div className="post-user-info">
                     <img
-                        src={post.author.photoUrl || userAvatar}
+                        src={post.author?.photoUrl || userAvatar}
                         alt="user"
                         className="post-user-avatar"
-                        onClick={() => navigate(`/profile/${post.author.id}`)}
+                        onClick={() => navigate(`/profile/${post.author?.id || post.userId}`)}
                     />
                     <div className="user-details">
-                        <h3 className="post-author-name">{post.author.name}</h3>
+                        <h3 className="post-author-name">{post.author?.name || "Deleted User"}</h3>
                         <p className="post-time" onClick={() => navigate(`/timeline/post/${post._id}`)}>{formatDate(post.createdAt)}</p>
                     </div>
                 </div>

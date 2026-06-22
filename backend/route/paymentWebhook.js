@@ -2,6 +2,7 @@ import express from "express";
 import Payment from "../model/paymentModel.js";
 import Course from "../model/courseModel.js";
 import User from "../model/userModel.js";
+import { createNotification } from "../controller/notificationController.js";
 
 const router = express.Router();
 
@@ -28,6 +29,7 @@ router.post("/paymob-webhook", async (req, res) => {
       await payment.save();
 
       // Enroll user in course
+      const io = req.app.get("io");
       const courseUpdate = await Course.findByIdAndUpdate(
         payment.course,
         { $addToSet: { enrolledCraftsmen: payment.user } },
@@ -41,6 +43,20 @@ router.post("/paymob-webhook", async (req, res) => {
         { new: true }
       );
       console.log("User enrollment success:", userUpdate ? "yes" : "no");
+
+      // Notify course creator
+      if (courseUpdate?.creator) {
+        const enrolledUser = await User.findById(payment.user).select("name");
+        createNotification({
+          recipient: courseUpdate.creator,
+          type: "enrollment",
+          title: "New Enrollment",
+          message: `${enrolledUser?.name || "A user"} enrolled in your course "${courseUpdate.title}"`,
+          link: `/course/${courseUpdate.slug || courseUpdate._id}`,
+          actor: payment.user,
+          io,
+        });
+      }
 
       console.log("Webhook processed successfully for orderId:", orderId);
     }

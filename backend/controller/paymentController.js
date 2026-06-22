@@ -3,6 +3,8 @@ import axios from "axios";
 import Course from "../model/courseModel.js";
 import User from "../model/userModel.js";
 import Payment from "../model/paymentModel.js";
+import Notification from "../model/NotificationModel.js";
+import { createNotification } from "./notificationController.js";
 
 
 const PAYMOB_API_KEY = process.env.PAYMOB_API_KEY;
@@ -12,7 +14,7 @@ const PAYMOB_IFRAME_ID = process.env.PAYMOB_IFRAME_ID;
 const FRONTEND_URL = process.env.FRONTEND_URL || process.env.VITE_FRONTEND_URL || "http://localhost:5173";
 
 /* ================== HELPER FUNCTION ================== */
-const enrollUserInCourse = async (userId, courseId) => {
+const enrollUserInCourse = async (userId, courseId, io) => {
   try {
     // Add user to course's enrolledCraftsmen
     const courseUpdate = await Course.findByIdAndUpdate(
@@ -30,6 +32,20 @@ const enrollUserInCourse = async (userId, courseId) => {
         { new: true }
       );
       console.log("User enrollment success:", userUpdate ? "yes" : "no");
+    }
+
+    // Notify course creator
+    if (courseUpdate?.creator) {
+      const enrolledUser = await User.findById(userId).select("name");
+      await createNotification({
+        recipient: courseUpdate.creator,
+        type: "enrollment",
+        title: "New Enrollment",
+        message: `${enrolledUser?.name || "A user"} enrolled in your course "${courseUpdate.title}"`,
+        link: `/course/${courseUpdate.slug || courseUpdate._id}`,
+        actor: userId,
+        io,
+      });
     }
   } catch (err) {
     console.error("Error in enrollUserInCourse:", err);
@@ -192,7 +208,7 @@ export const verifyPayment = async (req, res) => {
     if (payment.status === "success") {
       // Ensure user is enrolled
       try {
-        await enrollUserInCourse(userId, payment.course);
+        await enrollUserInCourse(userId, payment.course, req.app.get("io"));
       } catch (enrollErr) {
         console.error("Enrollment error in verifyPayment (success status):", enrollErr);
       }
@@ -207,7 +223,7 @@ export const verifyPayment = async (req, res) => {
     // If payment is success/paid, enroll + credit + return success
     if (["paid", "success"].includes(payment.status)) {
       // Ensure enrollment
-      await enrollUserInCourse(userId, payment.course);
+      await enrollUserInCourse(userId, payment.course, req.app.get("io"));
 
       // Credit trainer if not already (idempotent)
       const course = await Course.findById(payment.course).populate('creator');
@@ -243,7 +259,7 @@ export const verifyPayment = async (req, res) => {
 
         // Enroll user in course
         try {
-          await enrollUserInCourse(userId, payment.course);
+          await enrollUserInCourse(userId, payment.course, req.app.get("io"));
         } catch (enrollErr) {
           console.error("Enrollment error in verifyPayment:", enrollErr);
           // Don't fail if enrollment has issues - payment is still successful
@@ -262,7 +278,7 @@ export const verifyPayment = async (req, res) => {
       if (payment.status === "success") {
         // Ensure user is enrolled
         try {
-          await enrollUserInCourse(userId, payment.course);
+          await enrollUserInCourse(userId, payment.course, req.app.get("io"));
         } catch (enrollErr) {
           console.error("Enrollment error in verifyPayment (catch success):", enrollErr);
         }
@@ -374,18 +390,7 @@ export const verifyPaymobTransaction = async (req, res) => {
           console.log("Payment found and updated");
           // Enroll user in course
           try {
-            await Course.findByIdAndUpdate(
-              payment.course,
-              { $addToSet: { enrolledCraftsmen: payment.user } },
-              { new: true }
-            );
-
-            await User.findByIdAndUpdate(
-              payment.user,
-              { $addToSet: { enrolledCourses: payment.course } },
-              { new: true }
-            );
-            console.log("User enrolled successfully");
+            await enrollUserInCourse(payment.user, payment.course, req.app.get("io"));
           } catch (enrollErr) {
             console.error("Error during enrollment:", enrollErr);
           }
@@ -467,7 +472,7 @@ export const paymentCallback = async (req, res) => {
       payment.paymentResponse = data;
       await payment.save();
 
-      await enrollUserInCourse(payment.user, payment.course);
+      await enrollUserInCourse(payment.user, payment.course, req.app.get("io"));
 
       // Credit trainer balance
       try {

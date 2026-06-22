@@ -1,6 +1,7 @@
 import Post from "../model/postModel.js";
 import User from "../model/userModel.js";
 import Certificate from "../model/certificateModel.js";
+import { createNotification } from "./notificationController.js";
 
 // ==================== CREATE POST ====================
 export const createPost = async (req, res) => {
@@ -99,6 +100,22 @@ export const likePost = async (req, res) => {
     await post.populate("author", "name photoUrl");
     await post.populate("likes", "name photoUrl");
 
+    // Notify post author on new like
+    if (!isLiked && post.author._id.toString() !== userId) {
+      const io = req.app.get("io");
+      const liker = await User.findById(userId).select("name photoUrl");
+      createNotification({
+        recipient: post.author._id,
+        type: "like",
+        title: "New Like",
+        message: `${liker?.name || "Someone"} liked your post`,
+        link: `/timeline/post/${postId}`,
+        actor: userId,
+        io,
+        dedupKey: { link: `/timeline/post/${postId}` },
+      });
+    }
+
     return res.status(200).json({
       message: isLiked ? "Post unliked" : "Post liked",
       post,
@@ -154,6 +171,25 @@ export const addComment = async (req, res) => {
     await post.save();
     await post.populate("author", "name photoUrl");
     await post.populate("comments.userId", "name photoUrl");
+
+    // Notify post author on new comment
+    if (post.author._id.toString() !== userId) {
+      const io = req.app.get("io");
+      const commentCount = post.comments.filter((c) => c.userId.toString() === userId).length;
+      const msg = commentCount > 1
+        ? `${user.name} commented again on your post (${commentCount} comments)`
+        : `${user.name} commented on your post: "${text.substring(0, 50)}${text.length > 50 ? "..." : ""}"`;
+      createNotification({
+        recipient: post.author._id,
+        type: "comment",
+        title: "New Comment",
+        message: msg,
+        link: `/timeline/post/${postId}`,
+        actor: userId,
+        io,
+        dedupKey: { link: `/timeline/post/${postId}` },
+      });
+    }
 
     return res.status(201).json({
       message: "Comment added successfully",

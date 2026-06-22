@@ -13,7 +13,7 @@ import { FaInbox } from "react-icons/fa6";
 import SelectInput from "../components/SelectInput";
 import { api } from "@services/api";
 import { useTranslation } from "react-i18next";
-import { CATEGORY_GROUPS, getCategoryLabel } from "../../../constants/categories";
+import { CATEGORY_GROUPS, getCategoryLabel, LEVELS, getLevelLabel, getLevelId } from "../../../constants/categories";
 const CLOUDINARY_URL = "https://api.cloudinary.com/v1_1/dhynqaw42/image/upload";
 const UPLOAD_PRESET = "CraftLink_Image";
 const CreateCoursePage = () => {
@@ -143,7 +143,7 @@ const CreateCoursePage = () => {
           setPrice(res.data.price || "");
           setDescription(res.data.description || "");
           setCategory(getCategoryId(res.data.category) || "");
-          setLevel(res.data.level || "");
+          setLevel(getLevelId(res.data.level) || "");
           setResetUpload(true);
         } catch (err) {
           console.error(err);
@@ -238,9 +238,12 @@ const CreateCoursePage = () => {
                   />
                   <SelectInput
                     label={t("Select Level")}
-                    options={[t("Beginner"), t("Intermediate"), t("Advanced")]}
-                    value={level}
-                    onChange={setLevel}
+                    options={LEVELS.map((l) => ({
+                      value: l.id,
+                      label: getLevelLabel(l.id, i18n.language),
+                    }))}
+                    value={level ? getLevelLabel(level, i18n.language) : ""}
+                    onChange={(val) => setLevel(val)}
                   />
                 </div>
               </div>

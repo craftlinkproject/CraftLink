@@ -4,10 +4,12 @@ import { useDispatch, useSelector } from "react-redux";
 import { useTheme } from "../context/ThemeContext";
 import { useTranslation } from "react-i18next";
 import { api } from "@services/api";
+import { useNotifications } from "../context/NotificationContext";
+import NotificationDropdown from "./ui/NotificationDropdown";
 import { MdSunny } from "react-icons/md";
 import { RiMoonClearFill } from "react-icons/ri";
 import { RiSearch2Line } from "react-icons/ri";
-import { IoClose } from "react-icons/io5";
+import { IoClose, IoNotifications } from "react-icons/io5";
 import userAvatar from "../assets/img/userAvatar.jpg";
 import logo from "../assets/CraftLink.svg";
 import axios from 'axios';
@@ -27,6 +29,8 @@ const Header = () => {
   const { userData } = useSelector(state => state.user);
   const { darkMode, setDarkMode } = useTheme();
 
+  const { unreadCount, markAsRead } = useNotifications();
+  const [showNotifications, setShowNotifications] = useState(false);
   const [query, setQuery] = useState("");
   const [results, setResults] = useState([]);
   const [loading, setLoading] = useState(false);
@@ -160,6 +164,27 @@ const Header = () => {
             </div>
           )}
         </div>
+        )}
+
+        {userData && (
+          <div className="header-notification-wrap">
+            <div
+              className="header-notification"
+              onClick={() => setShowNotifications((p) => !p)}
+              title={t("Notifications")}
+            >
+              <IoNotifications className="header-notification-icon" />
+              {unreadCount > 0 && (
+                <span className="header-notification-badge">
+                  {unreadCount > 99 ? "99+" : unreadCount}
+                </span>
+              )}
+            </div>
+            <NotificationDropdown
+              open={showNotifications}
+              onClose={() => setShowNotifications(false)}
+            />
+          </div>
         )}
 
         <ul>

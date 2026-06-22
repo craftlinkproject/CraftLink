@@ -1,9 +1,11 @@
-import React from "react";
+import React, { useState } from "react";
 import { useSelector } from "react-redux";
 import { IoNotifications } from "react-icons/io5";
 import userAvatar from "../../../assets/img/userAvatar.jpg";
 import { RiSearchLine } from "@icons";
 import { useNavigate } from "react-router-dom";
+import { useNotifications } from "../../../context/NotificationContext";
+import NotificationDropdown from "../../ui/NotificationDropdown";
 function Nav({
   sidebarHide,
   setSidebarHide,
@@ -13,6 +15,8 @@ function Nav({
   setDarkMode,
 }) {
   const { userData: currentUser } = useSelector((state) => state.user);
+  const { unreadCount } = useNotifications();
+  const [showNotifications, setShowNotifications] = useState(false);
   const navigate = useNavigate();
   return (
     <nav>
@@ -40,10 +44,14 @@ function Nav({
         onChange={() => setDarkMode(!darkMode)}
       />
       <label htmlFor="switch-mode" className="switch-mode"></label>
-      <a href="#" className="notification">
+      <span className="notification" onClick={() => setShowNotifications((p) => !p)}>
         <IoNotifications className="bx" />
-        <span className="num">8</span>
-      </a>
+        {unreadCount > 0 && <span className="num">{unreadCount > 99 ? "99+" : unreadCount}</span>}
+        <NotificationDropdown
+          open={showNotifications}
+          onClose={() => setShowNotifications(false)}
+        />
+      </span>
       <button onClick={() => navigate("/profile")} className="profile">
         <img src={currentUser?.photoUrl || userAvatar} alt="profile" />
       </button>

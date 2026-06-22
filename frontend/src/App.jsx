@@ -122,7 +122,22 @@ export default function App() {
   return (
     <>
       <FirebaseRedirectHandler />
-      <ToastContainer />
+      <ToastContainer
+        position="top-right"
+        autoClose={4000}
+        hideProgressBar={false}
+        newestOnTop
+        closeOnClick
+        rtl={false}
+        pauseOnFocusLoss
+        draggable
+        pauseOnHover
+        theme="colored"
+        icon={true}
+        toastClassName="custom-toast"
+        bodyClassName="custom-toast-body"
+        progressClassName="custom-toast-progress"
+      />
       <ScrollToTop />
       <AISupportChat />
       <Suspense fallback={<LoadingFire />}>
