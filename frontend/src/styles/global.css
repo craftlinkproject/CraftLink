@@ -261,6 +261,8 @@ a {
   width: 100vw;
   height: 100vh;
   background-color: var(--bg-color);
+  z-index: 200000;
+  position: relative;
 }
 
 .fire {
@@ -621,6 +623,7 @@ header .section-layout {
   height: 60px;
   display: flex;
   align-items: center;
+  justify-content: space-between;
 }
 
 .full-width header .section-layout {

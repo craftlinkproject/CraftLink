@@ -12,11 +12,12 @@ import { IoClose } from "react-icons/io5";
 import { RiSparkling2Fill } from "react-icons/ri";
 import { useTranslation } from "react-i18next";
 import { api } from "@services/api";
+import { getCategoryLabel, getCategoryId } from "../../../constants/categories";
 
 const AICourseSearch = () => {
   const { i18n, t } = useTranslation();
   const [searchParams, setSearchParams] = useSearchParams();
-  const initialCategory = searchParams.get("category") || "";
+  const initialCategory = getCategoryId(searchParams.get("category") || "");
   const initialQuery = searchParams.get("q") || "";
 
   const [searchTerm, setSearchTerm] = useState(initialQuery);
@@ -54,9 +55,7 @@ const AICourseSearch = () => {
 
   const categoryFiltered = useMemo(() => {
     if (!activeCategory) return courses;
-    return courses.filter(
-      (c) => c.category?.toLowerCase() === activeCategory.toLowerCase()
-    );
+    return courses.filter((c) => getCategoryId(c.category) === activeCategory);
   }, [courses, activeCategory]);
 
   const fuseResults = useMemo(() => {
@@ -255,7 +254,7 @@ const AICourseSearch = () => {
       </div>
       <div className="search-container">
         <div className="wavy"></div>
-        <h2>{activeCategory ? t(activeCategory) : t("Search")}</h2>
+        <h2>{activeCategory ? getCategoryLabel(activeCategory, i18n.language) : t("Search")}</h2>
 
         {activeCategory && (
           <div
@@ -281,7 +280,7 @@ const AICourseSearch = () => {
                 cursor: "pointer",
               }}
             >
-              {t("Category")}: {t(activeCategory)}
+              {t("Category")}: {getCategoryLabel(activeCategory, i18n.language)}
               <IoClose style={{ fontSize: "1rem" }} />
             </button>
           </div>
@@ -410,7 +409,7 @@ const AICourseSearch = () => {
           searchMeta?.intent
             ? t("Results for") + ' "' + searchMeta.query + '"'
             : activeCategory
-              ? t(activeCategory)
+              ? getCategoryLabel(activeCategory, i18n.language)
               : t("Results")
         }
         limit={12}
@@ -444,7 +443,7 @@ const AICourseSearch = () => {
                     lectures={course.lectures?.length || 0}
                     level={course.level}
                     price={course.price}
-                    tag={course.category}
+                    tag={getCategoryId(course.category)}
                     courseId={course._id}
                     reviews={course.reviews}
                   />

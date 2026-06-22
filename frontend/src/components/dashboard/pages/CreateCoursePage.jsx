@@ -13,6 +13,7 @@ import { FaInbox } from "react-icons/fa6";
 import SelectInput from "../components/SelectInput";
 import { api } from "@services/api";
 import { useTranslation } from "react-i18next";
+import { CATEGORY_GROUPS, getCategoryLabel } from "../../../constants/categories";
 const CLOUDINARY_URL = "https://api.cloudinary.com/v1_1/dhynqaw42/image/upload";
 const UPLOAD_PRESET = "CraftLink_Image";
 const CreateCoursePage = () => {
@@ -141,7 +142,7 @@ const CreateCoursePage = () => {
           setSubTitle(res.data.subTitle || "");
           setPrice(res.data.price || "");
           setDescription(res.data.description || "");
-          setCategory(res.data.category || "");
+          setCategory(getCategoryId(res.data.category) || "");
           setLevel(res.data.level || "");
           setResetUpload(true);
         } catch (err) {
@@ -225,113 +226,15 @@ const CreateCoursePage = () => {
                 <div className="selected-options">
                   <SelectInput
                     label={t("Select Category")}
-                    options={[
-                      {
-                        label: t("Construction & Building"),
-                        items: [
-                          { value: "Carpenter", label: t("Carpenter") },
-                          { value: "Plumber", label: t("Plumber") },
-                          { value: "Electrician", label: t("Electrician") },
-                          { value: "Mason", label: t("Mason") },
-                          { value: "Bricklayer", label: t("Bricklayer") },
-                          { value: "Painter", label: t("Painter") },
-                          { value: "Welder", label: t("Welder") },
-                          { value: "Blacksmith", label: t("Blacksmith") },
-                          { value: "Roofer", label: t("Roofer") },
-                          { value: "Tiler", label: t("Tiler") },
-                          { value: "Concrete Worker", label: t("Concrete Worker") },
-                        ],
-                      },
-                      {
-                        label: t("Technical & Engineering"),
-                        items: [
-                          { value: "Mechanic", label: t("Mechanic") },
-                          { value: "Auto Electrician", label: t("Auto Electrician") },
-                          { value: "HVAC Technician", label: t("HVAC Technician") },
-                          { value: "Refrigeration Technician", label: t("Refrigeration Technician") },
-                          { value: "Technician", label: t("Technician") },
-                          { value: "Electronics Technician", label: t("Electronics Technician") },
-                          { value: "Network Technician", label: t("Network Technician") },
-                          { value: "Computer Technician", label: t("Computer Technician") },
-                        ],
-                      },
-                      {
-                        label: t("Crafts & Handicrafts"),
-                        items: [
-                          { value: "Tailor", label: t("Tailor") },
-                          { value: "Shoemaker", label: t("Shoemaker") },
-                          { value: "Weaver", label: t("Weaver") },
-                          { value: "Potter", label: t("Potter") },
-                          { value: "Goldsmith", label: t("Goldsmith") },
-                          { value: "Silversmith", label: t("Silversmith") },
-                          { value: "Woodworker", label: t("Woodworker") },
-                          { value: "Sculptor", label: t("Sculptor") },
-                          { value: "Calligrapher", label: t("Calligrapher") },
-                        ],
-                      },
-                      {
-                        label: t("Food & Hospitality"),
-                        items: [
-                          { value: "Chef", label: t("Chef") },
-                          { value: "Cook", label: t("Cook") },
-                          { value: "Baker", label: t("Baker") },
-                          { value: "Butcher", label: t("Butcher") },
-                          { value: "Pastry Chef", label: t("Pastry Chef") },
-                          { value: "Barista", label: t("Barista") },
-                          { value: "Waiter", label: t("Waiter") },
-                          { value: "Restaurant Worker", label: t("Restaurant Worker") },
-                        ],
-                      },
-                      {
-                        label: t("Services"),
-                        items: [
-                          { value: "Barber", label: t("Barber") },
-                          { value: "Hairdresser", label: t("Hairdresser") },
-                          { value: "Makeup Artist", label: t("Makeup Artist") },
-                          { value: "Cleaner", label: t("Cleaner") },
-                          { value: "Gardener", label: t("Gardener") },
-                          { value: "Babysitter", label: t("Babysitter") },
-                          { value: "Driver", label: t("Driver") },
-                          { value: "Delivery Man", label: t("Delivery Man") },
-                          { value: "Security Guard", label: t("Security Guard") },
-                        ],
-                      },
-                      {
-                        label: t("Industry & Labor"),
-                        items: [
-                          { value: "Factory Worker", label: t("Factory Worker") },
-                          { value: "Metalworker", label: t("Metalworker") },
-                          { value: "Textile Worker", label: t("Textile Worker") },
-                          { value: "Printer", label: t("Printer") },
-                          { value: "Assembler", label: t("Assembler") },
-                        ],
-                      },
-                      {
-                        label: t("Creative & Digital"),
-                        items: [
-                          { value: "Programmer", label: t("Programmer") },
-                          { value: "Web Developer", label: t("Web Developer") },
-                          { value: "Mobile Developer", label: t("Mobile Developer") },
-                          { value: "UI/UX Designer", label: t("UI/UX Designer") },
-                          { value: "Graphic Designer", label: t("Graphic Designer") },
-                          { value: "Photographer", label: t("Photographer") },
-                          { value: "Artist", label: t("Artist") },
-                          { value: "Musician", label: t("Musician") },
-                          { value: "Video Editor", label: t("Video Editor") },
-                        ],
-                      },
-                      {
-                        label: t("Agriculture & Nature"),
-                        items: [
-                          { value: "Farmer", label: t("Farmer") },
-                          { value: "Fisherman", label: t("Fisherman") },
-                          { value: "Gardener", label: t("Gardener") },
-                          { value: "Animal Breeder", label: t("Animal Breeder") },
-                        ],
-                      },
-                    ]}
-                    value={category}
-                    onChange={setCategory}
+                    options={CATEGORY_GROUPS.map((group) => ({
+                      label: t(group.labelKey),
+                      items: group.items.map((id) => ({
+                        value: id,
+                        label: getCategoryLabel(id, i18n.language),
+                      })),
+                    }))}
+                    value={category ? getCategoryLabel(category, i18n.language) : ""}
+                    onChange={(val) => setCategory(val)}
                   />
                   <SelectInput
                     label={t("Select Level")}

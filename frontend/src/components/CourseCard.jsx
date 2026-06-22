@@ -4,6 +4,7 @@ import { FaStar } from "react-icons/fa";
 import { BsClockHistory } from "react-icons/bs";
 import { useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
+import { getCategoryLabel, getCategoryId } from "../constants/categories";
 const CourseCard = ({ image, title, instructor, tag, hours, lectures, level, price, courseId, reviews }) => {
     const navigate = useNavigate()
     const { i18n, t } = useTranslation();
@@ -27,9 +28,9 @@ const CourseCard = ({ image, title, instructor, tag, hours, lectures, level, pri
                               style={{ cursor: "pointer" }}
                               onClick={(e) => {
                                 e.stopPropagation();
-                                navigate(`/search?category=${encodeURIComponent(tag)}`);
-                              }}
-                            >#{t(tag)}</span>
+                              navigate(`/search?category=${getCategoryId(tag)}`);
+                            }}
+                          >#{getCategoryLabel(getCategoryId(tag), i18n.language)}</span>
                             <span className="star"><FaStar />{averageRating}</span>
                         </div>
                         <span className="hours"><BsClockHistory />{hours}</span>

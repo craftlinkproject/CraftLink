@@ -35,6 +35,7 @@ import {
 
 import { ClipLoader } from "react-spinners";
 import { ROLE_LABELS } from "@/constants/roles";
+import { getCategoryLabel, getCategoryId } from "../../../constants/categories";
 import userAvatar from "../../../assets/img/userAvatar.jpg";
 import image from "../../../assets/img/image.png";
 import { useTranslation } from "react-i18next";
@@ -522,7 +523,7 @@ const Profile = () => {
                                   </div>
                                 </label>
                               )}
-                              {course.category && <span className="category">#{course.category}</span>}
+                              {course.category && <span className="category">#{getCategoryLabel(getCategoryId(course.category), i18n.language)}</span>}
                             </div>
                             {isOwner && (
                               <div className="edit-course"

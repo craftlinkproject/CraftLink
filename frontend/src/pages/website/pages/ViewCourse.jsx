@@ -11,6 +11,7 @@ import { PiMonitorPlayFill } from "react-icons/pi";
 import { MdReviews } from "react-icons/md";
 import { PiUserCircleDashedFill } from "react-icons/pi";
 import TestimonialsSwiper from "../../../components/TestimonialsSwiper";
+import { getCategoryLabel, getCategoryId } from "../../../constants/categories";
 import { useParams } from "react-router-dom";
 import { api } from "@services/api";
 import axios from "axios";
@@ -390,7 +391,7 @@ const ViewCourse = () => {
           </div>
           <div className="card-container">
             <div className="title-card">
-              <p>{t(course?.category)}</p>
+              <p>{getCategoryLabel(getCategoryId(course?.category), i18n.language)}</p>
               <svg
                 xmlns="http://www.w3.org/2000/svg"
                 width="20"
