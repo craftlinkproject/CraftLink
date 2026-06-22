@@ -12,11 +12,13 @@
   "dependencies": {
     "@fontsource/el-messiri": "^5.2.8",
     "@fontsource/outfit": "^5.2.8",
+    "@radix-ui/react-avatar": "^1.2.0",
     "@reduxjs/toolkit": "^2.11.2",
     "@tailwindcss/vite": "^4.1.18",
     "axios": "^1.13.2",
     "axios-cookiejar-support": "^6.0.5",
     "crypto-js": "^4.2.0",
+    "dotted-map": "^3.1.0",
     "firebase": "^12.9.0",
     "framer-motion": "^12.31.0",
     "fuse.js": "^7.3.0",

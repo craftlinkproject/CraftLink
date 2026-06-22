@@ -692,10 +692,6 @@ html[dir="rtl"] .nav-link {
 
 
 @media (max-width: 800px) {
-  html[dir="rtl"] header ul li:first-child {
-    display: none;
-  }
-
   html[dir="rtl"] .nav-link {
     margin-right: .5rem;
     margin-left: 0;
@@ -928,12 +924,22 @@ html[dir="rtl"] .nav-link {
 
 @media (max-width: 576px) {
   .header-search {
-    max-width: 140px;
-    margin: 0 0.5rem;
+    max-width: 120px;
+    margin: 0 0.3rem;
   }
 
   .header-search-input {
-    padding: 6px 28px 6px 28px;
+    padding: 5px 24px 5px 24px;
+    font-size: 0.75rem;
+  }
+
+  .header-search-icon {
+    left: 8px;
+    font-size: 0.85rem;
+  }
+
+  .header-search-clear {
+    right: 4px;
     font-size: 0.8rem;
   }
 }
@@ -3903,6 +3909,41 @@ html[dir="rtl"] .cft-reviews .images img:not(:first-child) {
   }
 }
 
+@media (max-width: 768px) {
+  header .section-layout {
+    height: 52px;
+    gap: 8px;
+  }
+
+  .logo {
+    margin-right: 0.5rem;
+  }
+
+  .logo h2 {
+    font-size: clamp(1rem, 2.5vw, 1.3rem);
+  }
+
+  .logo img {
+    height: clamp(20px, 2.5vw, 26px);
+  }
+
+  header ul {
+    gap: 4px;
+  }
+
+  .nav-link {
+    margin-left: 0;
+    padding: 0 0.5rem;
+    font-size: 0.82rem;
+    white-space: nowrap;
+  }
+
+  .nav-link.theme-toggle {
+    width: 16px;
+    height: 16px;
+  }
+}
+
 @media (max-width: 650px) {
   header .container {
     height: 50px;
@@ -3919,18 +3960,28 @@ html[dir="rtl"] .cft-reviews .images img:not(:first-child) {
     padding: 1rem 0;
   }
 
-  header ul {
-    justify-content: flex-end;
-    width: 100%;
-    gap: 10px;
+  .logo {
+    margin-right: 0.2rem;
   }
 
-  .logo {
-    margin-right: 0;
+  .logo h2 {
+    font-size: clamp(0.85rem, 2.5vw, 1rem);
+  }
+
+  header ul {
+    justify-content: flex-end;
+    gap: 2px;
   }
 
   .nav-link {
     margin-left: 0;
+    padding: 0 0.35rem;
+    font-size: 0.75rem;
+  }
+
+  .nav-link.theme-toggle {
+    width: 14px;
+    height: 14px;
   }
 
   .right {
@@ -10775,4 +10826,14 @@ html[dir="rtl"] .main-dash .order .history-w .history-user img {
   width: 100%;
   align-items: center;
   justify-content: center;
+}
+
+@keyframes marquee {
+  0% { transform: translateX(0); }
+  100% { transform: translateX(-50%); }
+}
+
+@keyframes marquee-vertical {
+  0% { transform: translateY(0); }
+  100% { transform: translateY(-50%); }
 }
