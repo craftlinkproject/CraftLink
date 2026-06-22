@@ -774,7 +774,7 @@ html[dir="rtl"] .nav-link {
 .header-search {
   position: relative;
   flex: 1;
-  max-width: 360px;
+  max-width: 100%;
   margin: 0 1.5rem;
 }
 
@@ -917,14 +917,14 @@ html[dir="rtl"] .nav-link {
 
 @media (max-width: 768px) {
   .header-search {
-    max-width: 200px;
+    /* max-width: 200px; */
     margin: 0 0.75rem;
   }
 }
 
 @media (max-width: 576px) {
   .header-search {
-    max-width: 120px;
+    /* max-width: 120px; */
     margin: 0 0.3rem;
   }
 
