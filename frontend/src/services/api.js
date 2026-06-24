@@ -1,4 +1,3 @@
-// src/services/api.js
 import axios from "axios";
 import { serverUrl } from "@config/server";
 const BASE_URL = serverUrl || "https://craftlink-production.up.railway.app";
@@ -19,5 +18,22 @@ api.interceptors.request.use((config) => {
   }
   return config;
 });
+
+api.interceptors.response.use(
+  (response) => response,
+  (error) => {
+    if (error.response) {
+      const { status } = error.response;
+
+      if (status === 401) {
+        sessionStorage.removeItem("token");
+        localStorage.removeItem("userData");
+        const returnUrl = encodeURIComponent(window.location.pathname + window.location.search + window.location.hash);
+        window.location.href = `/signin?returnUrl=${returnUrl}`;
+      }
+    }
+    return Promise.reject(error);
+  }
+);
 
 export default api;

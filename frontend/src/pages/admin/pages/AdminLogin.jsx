@@ -54,7 +54,9 @@ export default function AdminLogin() {
 
         toast.success("Successfully logged in");
 
-        navigate("/dashboard");
+        const params = new URLSearchParams(window.location.search);
+        const returnUrl = params.get("returnUrl");
+        navigate(returnUrl || "/dashboard");
       } else {
         toast.error(res.data?.message || "Failed to log in");
       }

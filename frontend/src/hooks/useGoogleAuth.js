@@ -24,7 +24,9 @@ export const useGoogleAuth = () => {
       if (res.data.token) sessionStorage.setItem("token", res.data.token);
       dispatch(setUserData(res.data.user || res.data));
       toast.success(`${endpoint.includes("signup") ? "Google Sign-Up" : "Login"} successful`);
-      navigate("/profile");
+      const params = new URLSearchParams(window.location.search);
+      const returnUrl = params.get("returnUrl");
+      navigate(returnUrl || "/profile");
     } catch (error) {
       toast.error(error.response?.data?.message || error.message || "Google auth failed");
     } finally {

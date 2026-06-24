@@ -2,11 +2,12 @@ import express from "express";
 import multer from "multer";
 import streamifier from "streamifier";
 import { v2 as cloudinary } from "cloudinary";
+import { authMiddleware } from "../middleware/authMiddleware.js";
 
 const upload = multer({ storage: multer.memoryStorage() });
 const router = express.Router();
 
-router.post("/video", upload.single("file"), async (req, res) => {
+router.post("/video", authMiddleware, upload.single("file"), async (req, res) => {
   try {
     if (!req.file) return res.status(400).json({ message: "No file provided" });
 

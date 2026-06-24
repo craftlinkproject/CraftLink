@@ -29,7 +29,9 @@ export const useSubmitAuth = (setLoading) => {
         `${endpoint.includes("signup") ? "Signup" : "Login"} successful`
       );
 
-      navigate("/profile");
+      const params = new URLSearchParams(window.location.search);
+      const returnUrl = params.get("returnUrl");
+      navigate(returnUrl || "/profile");
     } catch (err) {
       console.log("Auth error:", err.response || err.message);
 

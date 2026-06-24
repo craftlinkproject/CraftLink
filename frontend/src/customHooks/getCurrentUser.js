@@ -1,17 +1,8 @@
 import { useEffect, useState } from "react";
 import { useDispatch } from "react-redux";
-import { setUserData } from "../redux/userSlice";
+import { logout, setUserData } from "../redux/userSlice";
 import { api } from "@services/api";
-// ===================== Custom Hook: Fetch Current User ===================== //
-/**
- * useCurrentUser - Fetches the current authenticated user from the backend
- * on mount and syncs it with Redux. Returns loading state for UI.
- * 
- * - Does not clear user data on 401; only logs a warning
- * - Returns boolean loading state (use for loading spinners)
- * 
- * @returns {boolean} loading - true while fetching, false when complete
- */
+
 const useCurrentUser = () => {
   const dispatch = useDispatch();
   const [loading, setLoading] = useState(true);
@@ -33,9 +24,11 @@ const useCurrentUser = () => {
         }
         else if (res.status === 401) {
           console.warn("Unauthorized:", res.data?.message || "No valid session");
+          dispatch(logout());
         }
         else {
           console.warn("Unexpected response:", res);
+          dispatch(logout());
         }
       } catch (err) {
         console.error("Failed to fetch user:", err.message);

@@ -36,7 +36,7 @@ socket.on("error", (err) => {
   console.log("SMTP BLOCKED:", err.message);
 });
 const corsOptions = {
-  origin: ["http://localhost:5173", "https://craft-link-eta.vercel.app"],
+  origin: ["http://localhost:5173", "https://craft-link-platform.vercel.app"],
   credentials: true,
   methods: ["GET", "POST", "PATCH", "DELETE", "PUT", "OPTIONS"],
   allowedHeaders: ["Content-Type", "Authorization", "Cookie"],

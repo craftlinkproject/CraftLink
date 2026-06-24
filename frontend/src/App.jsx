@@ -153,21 +153,21 @@ export default function App() {
           <Route path="/profile" element={<PrivateRoute allowedRoles={[1, 2, 3]}><Profile /></PrivateRoute>} />
           <Route path='/helpcenter' element={<HelpCenter />} />
           <Route path='/viewcourse/:courseId' element={<ViewCourse />} />
-          <Route path='/createcourse' element={<CreateCourse />} />
-          <Route path="/createcourse/:courseId" element={<CreateCourse />} />
-          <Route path="/payment-success" element={<PaymentSuccess />} />
-          <Route path="/payment/fail" element={<PaymentFail />} />
-          <Route path='createcourse/createLecture/:courseId' element={<CreateLecture />} />
+          <Route path='/createcourse' element={<PrivateRoute allowedRoles={[1, 2, 0]}><CreateCourse /></PrivateRoute>} />
+          <Route path="/createcourse/:courseId" element={<PrivateRoute allowedRoles={[1, 2, 0]}><CreateCourse /></PrivateRoute>} />
+          <Route path="/payment-success" element={<PrivateRoute><PaymentSuccess /></PrivateRoute>} />
+          <Route path="/payment/fail" element={<PrivateRoute><PaymentFail /></PrivateRoute>} />
+          <Route path='createcourse/createLecture/:courseId' element={<PrivateRoute allowedRoles={[1, 2, 0]}><CreateLecture /></PrivateRoute>} />
           <Route path='about' element={<About />} />
           <Route path='contactus' element={<ContactUs />} />
           <Route path='privacy-policy' element={<PrivacyPolicy />} />
           <Route path='terms' element={<TermsPage />} />
-          <Route path='timeline' element={<TimeLine />} />
-          <Route path='timeline/post/:postId' element={<SinglePost />} />
-          <Route path='/playCourse/:courseId' element={<PlayCourse />} />
+          <Route path='timeline' element={<PrivateRoute><TimeLine /></PrivateRoute>} />
+          <Route path='timeline/post/:postId' element={<PrivateRoute><SinglePost /></PrivateRoute>} />
+          <Route path='/playCourse/:courseId' element={<PrivateRoute><PlayCourse /></PrivateRoute>} />
           <Route path='/verify-certificate' element={<CertificateVerification />} />
           <Route path='/admin-login' element={<GuestRoute loading={loadingUser}><AdminLogin /></GuestRoute>} />
-          <Route path='/dashboard' element={<Dashboard />} />
+          <Route path='/dashboard' element={<PrivateRoute allowedRoles={[0]}><Dashboard /></PrivateRoute>} />
           <Route path='/instructor-withdraw' element={<PrivateRoute allowedRoles={[2]}><InstructorWithdraw /></PrivateRoute>} />
         </Routes>
       </Suspense>

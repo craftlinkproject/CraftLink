@@ -289,6 +289,9 @@ export const createLecture = async (req, res) => {
     if (!course) {
       return res.status(404).json({ message: "Course not found" });
     }
+    if (course.creator.toString() !== req.userId) {
+      return res.status(403).json({ message: "Not authorized to add lectures to this course" });
+    }
     const lecture = await Lecture.create({
       lectureTitle,
       description: description || "",
@@ -327,6 +330,13 @@ export const getCourseLecture = async (req, res) => {
     if (!course) {
       return res.status(404).json({ message: "Course not found" });
     }
+    const isOwner = course.creator.toString() === req.userId;
+    const isEnrolled = course.enrolledCraftsmen && course.enrolledCraftsmen.some(
+      (e) => e.toString() === req.userId
+    );
+    if (!isOwner && !isEnrolled) {
+      return res.status(403).json({ message: "Not enrolled in this course" });
+    }
     return res.status(200).json({
       lectures: course.lectures,
     });
@@ -351,6 +361,10 @@ export const editLecture = async (req, res) => {
     const lecture = await Lecture.findById(lectureId);
     if (!lecture) {
       return res.status(404).json({ message: "Lecture not found" });
+    }
+    const course = await Course.findOne({ lectures: lectureId });
+    if (course && course.creator.toString() !== req.userId) {
+      return res.status(403).json({ message: "Not authorized to edit this lecture" });
     }
     if (lectureTitle !== undefined) lecture.lectureTitle = lectureTitle;
     if (description !== undefined) lecture.description = description;
@@ -377,12 +391,17 @@ export const removeLecture = async (req, res) => {
   try {
     const { lectureId } = req.params;
 
-    const lecture = await Lecture.findByIdAndDelete(lectureId);
+    const lecture = await Lecture.findById(lectureId);
     if (!lecture) {
       return res.status(404).json({ message: "Lecture not found" });
     }
 
     const course = await Course.findOne({ lectures: lectureId });
+    if (course && course.creator.toString() !== req.userId) {
+      return res.status(403).json({ message: "Not authorized to remove this lecture" });
+    }
+
+    await Lecture.findByIdAndDelete(lectureId);
 
     if (course) {
       course.lectures.pull(lectureId);

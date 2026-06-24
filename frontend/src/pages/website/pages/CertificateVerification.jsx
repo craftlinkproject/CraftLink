@@ -63,7 +63,7 @@ const CertificateVerification = () => {
         flexDirection: "column",
         alignItems: "center",
         padding: "60px 20px 80px",
-        background: "linear-gradient(135deg, #0f0c29 0%, #1a1a3e 50%, #24243e 100%)",
+        background: "var(--bg-color)",
         position: "relative",
         overflow: "hidden",
       }}>
@@ -154,7 +154,7 @@ const CertificateVerification = () => {
             transition={{ delay: 0.4 }}
             style={{
               fontSize: "1.1rem",
-              color: "rgba(255,255,255,0.6)",
+              color: "var(--text-secondary)",
               margin: "0 0 36px",
               lineHeight: 1.6,
               maxWidth: "520px",
@@ -192,8 +192,8 @@ const CertificateVerification = () => {
                   padding: "16px 48px 16px 20px",
                   borderRadius: "16px",
                   border: "2px solid rgba(255,255,255,0.1)",
-                  background: "rgba(255,255,255,0.05)",
-                  color: "#fff",
+                  background: "var(--input-bg)",
+                  color: "var(--text-secondary)",
                   fontSize: "1rem",
                   outline: "none",
                   transition: "all 0.3s ease",
@@ -201,12 +201,12 @@ const CertificateVerification = () => {
                   boxSizing: "border-box",
                 }}
                 onFocus={(e) => {
-                  e.target.style.borderColor = "rgba(212,175,55,0.5)";
-                  e.target.style.background = "rgba(255,255,255,0.08)";
+                  e.target.style.borderColor = "var(--input-bg)";
+                  e.target.style.background = "var(--input-bg)";
                 }}
                 onBlur={(e) => {
-                  e.target.style.borderColor = "rgba(255,255,255,0.1)";
-                  e.target.style.background = "rgba(255,255,255,0.05)";
+                  e.target.style.borderColor = "var(--input-bg)";
+                  e.target.style.background = "var(--input-bg)";
                 }}
               />
               {searchTerm && (
