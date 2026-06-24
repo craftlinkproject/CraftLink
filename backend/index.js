@@ -4,6 +4,7 @@ dotenv.config();
 import connectDb from "./config/connectDB.js";
 import cookieParser from "cookie-parser";
 import cors from "cors";
+import helmet from "helmet";
 import mongoose from "mongoose";
 import http from "http";
 import { Server } from "socket.io";
@@ -24,17 +25,7 @@ const app = express();
 const port = Number(process.env.PORT) || 8000;
 app.use(express.json());
 app.use(cookieParser());
-import net from "net";
-
-const socket = net.createConnection(587, "smtp.gmail.com");
-
-socket.on("connect", () => {
-  console.log("SMTP PORT OPEN");
-});
-
-socket.on("error", (err) => {
-  console.log("SMTP BLOCKED:", err.message);
-});
+app.use(helmet());
 const corsOptions = {
   origin: ["http://localhost:5173", "https://craft-link-platform.vercel.app"],
   credentials: true,
@@ -57,9 +48,10 @@ app.use("/api/upload", uploadRouter);
 app.use("/api/notifications", notificationRouter);
 app.get("/", (req, res) => res.send("Server Running 🚀"));
 const server = http.createServer(app);
+const allowedOrigins = ["http://localhost:5173", "https://craft-link-platform.vercel.app"];
 const io = new Server(server, {
   cors: {
-    origin: true,
+    origin: allowedOrigins,
     credentials: true,
   },
 });

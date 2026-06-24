@@ -106,17 +106,20 @@ export const login = async (req, res) => {
 export const adminLogin = async (req, res) => {
   try {
     const { username, password } = req.body;
-    if (username !== "admin" || password !== "123") {
-      return res.status(401).json({ message: "Invalid admin credentials" });
+    if (!username || !password) {
+      return res.status(400).json({ message: "Email and password are required" });
     }
 
-    const adminEmail = "admin@craftlink.com";
-    let user = await User.findOne({ email: adminEmail }).select("+password");
+    let user = await User.findOne({ email: username, role: 0 }).select("+password");
     if (!user) {
+      const adminCount = await User.countDocuments({ role: 0 });
+      if (adminCount > 0) {
+        return res.status(401).json({ message: "Invalid admin credentials" });
+      }
       const hashedPassword = await bcrypt.hash(password, 10);
       user = await User.create({
         name: "Admin",
-        email: adminEmail,
+        email: username,
         password: hashedPassword,
         role: 0,
       });
@@ -162,8 +165,6 @@ export const logOut = async (req, res) => {
  * Security Notes:
  * - OTP expires after 5 minutes
  * - A new OTP request is blocked if a valid OTP already exists
- * - In DEV/TEST mode, OTP can be fixed or logged for testing purposes
- * - Production environment NEVER allows OTP bypass
  */
 
 /**
@@ -216,19 +217,6 @@ export const verifyOTP = async (req, res) => {
     const user = await User.findOne({ email }).select("+resetOtp +otpExpires");
     if (!user) {
       return res.status(400).json({ message: "User not found" });
-    }
-    if (
-      process.env.NODE_ENV === "development" &&
-      process.env.BYPASS_OTP === "true"
-    ) {
-      user.isOtpVerifed = true;
-      user.resetOtp = undefined;
-      user.otpExpires = undefined;
-      await user.save();
-      console.log("⚠️ OTP BYPASSED FOR:", email);
-      return res.status(200).json({
-        message: "OTP bypassed successfully (DEV MODE)",
-      });
     }
     if (!otp) {
       return res.status(400).json({ message: "OTP is required" });
