@@ -13,7 +13,7 @@ import { FaInbox } from "react-icons/fa6";
 import SelectInput from "../components/SelectInput";
 import { api } from "@services/api";
 import { useTranslation } from "react-i18next";
-import { CATEGORY_GROUPS, getCategoryLabel, LEVELS, getLevelLabel, getLevelId } from "../../../constants/categories";
+import { CATEGORY_GROUPS, getCategoryLabel, getCategoryId, LEVELS, getLevelLabel, getLevelId } from "../../../constants/categories";
 const CLOUDINARY_URL = "https://api.cloudinary.com/v1_1/dhynqaw42/image/upload";
 const UPLOAD_PRESET = "CraftLink_Image";
 const CreateCoursePage = () => {
