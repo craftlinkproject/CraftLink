@@ -9,6 +9,7 @@ import userAvatar from "../../../assets/img/userAvatar.jpg";
 import { BiLike, FaBuysellads, SiGoogleadsense, TbExternalLink, BiSolidLike, BiComment, SiTelegram, BsThreeDots, BiArrowBack } from "@icons";
 import { PhotoView, PhotoProvider } from "react-photo-view";
 import api from "@services/api";
+import ConfirmModal from "../../../components/ConfirmModal";
 
 // ============================================================================
 // SINGLE POST PAGE COMPONENT
@@ -25,6 +26,7 @@ const SinglePost = () => {
     const [commentText, setCommentText] = useState("");
     const [loading, setLoading] = useState(false);
     const [showMenu, setShowMenu] = useState(false);
+    const [showDeleteModal, setShowDeleteModal] = useState(false);
 
     const posts = useSelector((state) => state.posts.posts);
     const postsStatus = useSelector((state) => state.posts.status);
@@ -45,17 +47,12 @@ const SinglePost = () => {
         return () => window.removeEventListener("resize", handleResize);
     }, []);
 
-    // ==================== DARK MODE ====================
+    // ==================== FETCH POSTS ON MOUNT / POST CHANGE ====================
     useEffect(() => {
-        document.body.classList.toggle("dark", darkMode);
-    }, [darkMode]);
-
-    // ==================== FETCH POSTS IF NOT LOADED ====================
-    useEffect(() => {
-        if (postsStatus === "idle") {
+        if (postId) {
             dispatch(fetchPosts());
         }
-    }, [dispatch, postsStatus]);
+    }, [dispatch, postId]);
 
     // ==================== REDIRECT IF POST NOT FOUND ====================
     useEffect(() => {
@@ -88,15 +85,20 @@ const SinglePost = () => {
     };
 
     // ==================== DELETE POST ====================
-    const handleDeletePost = async () => {
-        if (!window.confirm("Are you sure you want to delete this post?")) return;
+    const handleDeletePost = () => {
+        setShowMenu(false);
+        setShowDeleteModal(true);
+    };
 
+    const confirmDeletePost = async () => {
         try {
             await dispatch(deletePost({ postId: post._id })).unwrap();
             navigate("/timeline");
         } catch (error) {
             console.error("Error deleting post:", error);
             alert("Failed to delete post");
+        } finally {
+            setShowDeleteModal(false);
         }
     };
     const handleDeleteComment = async (commentId) => {
@@ -122,33 +124,39 @@ const SinglePost = () => {
         return d.toLocaleDateString();
     };
 
-    // ==================== LOADING STATE ====================
-    if (postsStatus === "loading" || !post) {
-        return (
-            <div className="message-container">
-                <SideBar sidebarHide={sidebarHide} activeMenu={activeMenu} setActiveMenu={setActiveMenu} />
-                <section id="content" className="chat-page">
-                    <Nav
-                        sidebarHide={sidebarHide}
-                        setSidebarHide={setSidebarHide}
-                        searchShow={searchShow}
-                        setSearchShow={setSearchShow}
-                        darkMode={darkMode}
-                        setDarkMode={setDarkMode}
-                    />
-                    <main style={{ textAlign: "center", padding: "50px" }}>
-                        <p>Loading post...</p>
-                    </main>
-                </section>
-            </div>
-        );
+    // ==================== LOADING / NOT FOUND ====================
+    if (!post) {
+        if (postsStatus === "loading" || postsStatus === "idle") {
+            return (
+                <div className="message-container">
+                    <SideBar sidebarHide={sidebarHide} activeMenu={activeMenu} setActiveMenu={setActiveMenu} />
+                    <section id="content" className="chat-page">
+                        <Nav
+                            sidebarHide={sidebarHide}
+                            setSidebarHide={setSidebarHide}
+                            searchShow={searchShow}
+                            setSearchShow={setSearchShow}
+                            darkMode={darkMode}
+                            setDarkMode={setDarkMode}
+                        />
+                        <main style={{ textAlign: "center", padding: "50px" }}>
+                            <p>Loading post...</p>
+                        </main>
+                    </section>
+                </div>
+            );
+        }
+        if (postsStatus === "succeeded") {
+            navigate("/timeline");
+            return null;
+        }
     }
 
     const isAuthor = post.author._id === currentUser?._id;
     const isLiked = post.likes.some((like) => like._id === currentUser?._id);
 
     return (
-        <div className="message-container">
+        <><div className="message-container">
             <SideBar
                 sidebarHide={sidebarHide}
                 activeMenu={activeMenu}
@@ -177,9 +185,10 @@ const SinglePost = () => {
                                             src={post.author.photoUrl || userAvatar}
                                             alt="user"
                                             className="post-user-avatar"
+                                            onClick={()=>navigate(`/profile/${post.author._id}`)}
                                         />
                                         <div className="user-details">
-                                            <h3 className="post-author-name">{post.author.name}</h3>
+                                            <h3 className="post-author-name" onClick={()=>navigate(`/profile/${post.author._id}`)}>{post.author.name}</h3>
                                             <p className="post-time">{formatDate(post.createdAt)}</p>
                                         </div>
                                     </div>
@@ -282,12 +291,13 @@ const SinglePost = () => {
                                                     src={comment.userPhoto || userAvatar}
                                                     alt="user"
                                                     className="comment-avatar"
+                                                    onClick={()=>navigate(`/profile/${comment.userId._id}`)}
                                                 />
                                                 <div className="comment-content">
                                                     <div className="comment-text">
                                                         <div className="comment-user-container">
                                                             <div className="comment-user">
-                                                                <strong>{comment.userName}</strong>
+                                                                <strong onClick={()=>navigate(`/profile/${comment.userId._id}`)}>{comment.userName}</strong>
                                                                 <span className="stat">•</span>
                                                                 <span className="comment-time">
                                                                     {formatDate(comment.createdAt)}
@@ -356,6 +366,14 @@ const SinglePost = () => {
                 </main>
             </section>
         </div>
+            <ConfirmModal
+                isOpen={showDeleteModal}
+                onClose={() => setShowDeleteModal(false)}
+                onConfirm={confirmDeletePost}
+                title="Delete Post"
+                message="Are you sure you want to delete this post? This action cannot be undone."
+            />
+        </>
     );
 };
 

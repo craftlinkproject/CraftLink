@@ -98,6 +98,13 @@ const postSlice = createSlice({
       state.createStatus = "idle";
       state.createError = null;
     },
+    updatePost: (state, action) => {
+      const updatedPost = action.payload;
+      const index = state.posts.findIndex((p) => p._id === updatedPost._id);
+      if (index !== -1) {
+        state.posts[index] = updatedPost;
+      }
+    },
   },
   extraReducers: (builder) => {
     builder
@@ -161,6 +168,6 @@ const postSlice = createSlice({
   },
 });
 
-export const { clearPosts } = postSlice.actions;
+export const { clearPosts, updatePost } = postSlice.actions;
 
 export default postSlice.reducer;

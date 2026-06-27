@@ -22,10 +22,6 @@ const CreateCourse = () => {
     return () => window.removeEventListener("resize", handleResize);
   }, []);
 
-  useEffect(() => {
-    document.body.classList.toggle("dark", darkMode);
-  }, [darkMode]);
-
   return (
     <div>
       <SideBar

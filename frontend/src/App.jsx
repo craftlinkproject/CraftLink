@@ -1,6 +1,6 @@
 // ===================== React Imports ===================== //
 import React, { Suspense, lazy } from "react";
-import { Route, Routes } from 'react-router-dom';
+import { Route, Routes, useLocation } from 'react-router-dom';
 import { ToastContainer } from 'react-toastify';
 import 'react-photo-view/dist/react-photo-view.css';
 import FirebaseRedirectHandler from './components/FirebaseRedirectHandler';
@@ -113,6 +113,11 @@ export default function App() {
   getCreatorCourse();
   useGetPublishedCourse();
   const loadingUser = useCurrentUser(); // Hook
+  const location = useLocation();
+
+const hideChat =
+  location.pathname === "/message" ||
+  location.pathname.startsWith("/message/");
   if (loadingUser) {
     return (
       <LoadingFire />
@@ -139,7 +144,7 @@ export default function App() {
         progressClassName="custom-toast-progress"
       />
       <ScrollToTop />
-      <AISupportChat />
+      {!hideChat && <AISupportChat />}
       <Suspense fallback={<LoadingFire />}>
         <Routes>
           <Route path='/' element={<Main />} />

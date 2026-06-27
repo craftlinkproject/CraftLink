@@ -62,7 +62,7 @@ const CertificateVerification = () => {
         display: "flex",
         flexDirection: "column",
         alignItems: "center",
-        padding: "60px 20px 80px",
+        padding: "100px 20px 80px",
         background: "var(--bg-color)",
         position: "relative",
         overflow: "hidden",

@@ -27,6 +27,16 @@ export const createPost = async (req, res) => {
     await post.save();
     await post.populate("author", "name photoUrl");
 
+    // Notify all online users about the new post
+    const io = req.app.get("io");
+    if (io) {
+      io.emit("newPost", {
+        postId: post._id,
+        authorId: userId,
+        authorName: post.author.name,
+      });
+    }
+
     return res.status(201).json({
       message: "Post created successfully",
       post,
@@ -100,9 +110,14 @@ export const likePost = async (req, res) => {
     await post.populate("author", "name photoUrl");
     await post.populate("likes", "name photoUrl");
 
+    // Broadcast updated post to all users for real-time sync
+    const io = req.app.get("io");
+    if (io) {
+      io.emit("postUpdated", post);
+    }
+
     // Notify post author on new like
     if (!isLiked && post.author._id.toString() !== userId) {
-      const io = req.app.get("io");
       const liker = await User.findById(userId).select("name photoUrl");
       const likerName = liker?.name || "Someone";
       createNotification({
@@ -175,9 +190,14 @@ export const addComment = async (req, res) => {
     await post.populate("author", "name photoUrl");
     await post.populate("comments.userId", "name photoUrl");
 
+    // Broadcast updated post to all users for real-time sync
+    const io = req.app.get("io");
+    if (io) {
+      io.emit("postUpdated", post);
+    }
+
     // Notify post author on new comment
     if (post.author._id.toString() !== userId) {
-      const io = req.app.get("io");
       const commentCount = post.comments.filter((c) => c.userId.toString() === userId).length;
       const msg = commentCount > 1
         ? `${user.name} commented again on your post (${commentCount} comments)`

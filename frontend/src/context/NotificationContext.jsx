@@ -1,17 +1,20 @@
 import { createContext, useContext, useState, useEffect, useRef, useCallback } from "react";
-import { useSelector } from "react-redux";
+import { useSelector, useDispatch } from "react-redux";
 import { io } from "socket.io-client";
 import { api } from "@services/api";
 import { serverUrl } from "../../config/server";
 import notificationSound from "../assets/start.mp3";
+import { updatePost } from "../redux/postSlice";
 
 const NotificationContext = createContext();
 
 export function NotificationProvider({ children }) {
   const { userData } = useSelector((state) => state.user);
+  const dispatch = useDispatch();
   const [notifications, setNotifications] = useState([]);
   const [unreadCount, setUnreadCount] = useState(0);
   const [socket, setSocket] = useState(null);
+  const [newPostAvailable, setNewPostAvailable] = useState(false);
   const audioRef = useRef(null);
 
   // Fetch initial notifications
@@ -62,12 +65,24 @@ export function NotificationProvider({ children }) {
       }
     });
 
+    // Listen for new posts from other users
+    s.on("newPost", (data) => {
+      if (data.authorId !== userData._id) {
+        setNewPostAvailable(true);
+      }
+    });
+
+    // Listen for real-time post updates (likes, comments)
+    s.on("postUpdated", (data) => {
+      dispatch(updatePost(data));
+    });
+
     setSocket(s);
 
     return () => {
       s.disconnect();
     };
-  }, [userData?._id]);
+  }, [userData?._id, dispatch]);
 
   const deleteAllNotifications = useCallback(async () => {
     try {
@@ -77,6 +92,10 @@ export function NotificationProvider({ children }) {
     } catch {
       // silently fail
     }
+  }, []);
+
+  const dismissNewPost = useCallback(() => {
+    setNewPostAvailable(false);
   }, []);
 
   const markAsRead = useCallback(async (id) => {
@@ -97,7 +116,7 @@ export function NotificationProvider({ children }) {
 
   return (
     <NotificationContext.Provider
-      value={{ notifications, unreadCount, markAsRead, fetchNotifications, deleteAllNotifications }}
+      value={{ notifications, unreadCount, markAsRead, fetchNotifications, deleteAllNotifications, newPostAvailable, dismissNewPost }}
     >
       <audio ref={audioRef} src={notificationSound} preload="none" />
       {children}

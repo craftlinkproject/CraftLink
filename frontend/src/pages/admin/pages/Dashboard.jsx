@@ -29,11 +29,6 @@ const Dashboard = () => {
     const { userData: currentUser } = useSelector((state) => state.user);
 
     useEffect(() => {
-        document.body.classList.toggle("dark", darkMode);
-        return () => document.body.classList.remove("dark", darkMode);
-    }, [darkMode]);
-
-    useEffect(() => {
         loadDashboardData();
     }, [currentUser]);
 

@@ -10,8 +10,9 @@ import CreatePost from "./components/CreatePost";
 import PostCard from "./components/PostCard";
 import { fetchPosts, deletePost } from "../../../redux/postSlice";
 import userAvatar from "../../../assets/img/userAvatar.jpg";
-import { TbExternalLink, FaBuysellads, SiGoogleadsense, FaRegNewspaper } from "@icons";
+import { TbExternalLink, FaBuysellads, SiGoogleadsense, FaRegNewspaper, IoClose } from "@icons";
 import { useTranslation } from "react-i18next";
+import { useNotifications } from "../../../context/NotificationContext";
 // ============================================================================
 // MAIN COMPONENT
 // ============================================================================
@@ -29,6 +30,13 @@ const TimeLine = () => {
   const postsError = useSelector((state) => state.posts.error);
   const createError = useSelector((state) => state.posts.createError);
 
+  const { newPostAvailable, dismissNewPost } = useNotifications();
+
+  const handleRefreshPosts = () => {
+    dispatch(fetchPosts());
+    dismissNewPost();
+  };
+
   // ==================== RESIZE LISTENER ====================
   useEffect(() => {
     const handleResize = () => {
@@ -40,11 +48,6 @@ const TimeLine = () => {
     window.addEventListener("resize", handleResize);
     return () => window.removeEventListener("resize", handleResize);
   }, []);
-
-  // ==================== DARK MODE ====================
-  useEffect(() => {
-    document.body.classList.toggle("dark", darkMode);
-  }, [darkMode]);
 
   // ==================== FETCH POSTS ====================
   useEffect(() => {
@@ -83,6 +86,16 @@ const TimeLine = () => {
                 userPhoto={currentUser?.photoUrl || userAvatar}
                 userName={currentUser?.name || "User"}
               />
+
+              {newPostAvailable && (
+                <div className="new-post-banner">
+                  <span>{t("New posts available")}</span>
+                  <button onClick={handleRefreshPosts}>{t("Refresh")}</button>
+                  <button className="new-post-banner-close" onClick={dismissNewPost}>
+                    <IoClose />
+                  </button>
+                </div>
+              )}
 
               {postsStatus === "loading" && posts.length === 0 ? (
                 <div style={{ textAlign: "center", padding: "40px 20px" }}>

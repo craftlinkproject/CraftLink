@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { useSelector } from "react-redux";
+import { useSelector, useDispatch } from "react-redux";
 import Nav from "../../../components/dashboard/components/Nav";
 import SideBar from "../../../components/dashboard/components/SideBar";
 import { useTheme } from "../../../context/ThemeContext";
@@ -16,17 +16,16 @@ import { useInputAnimation } from "../../../hooks/useInputAnimation";
 import { MdCheckCircle, MdCancel } from "react-icons/md";
 import { FaTimesCircle } from "react-icons/fa";
 import { useTranslation } from "react-i18next";
+import { fetchEarnings } from "../../../redux/walletSlice";
 
 const InstructorWithdraw = () => {
   const navigate = useNavigate();
+  const dispatch = useDispatch();
   const { darkMode, setDarkMode } = useTheme();
   const [sidebarHide, setSidebarHide] = useState(false);
   const [searchShow, setSearchShow] = useState(false);
   const { i18n, t } = useTranslation();
   const { handleFocus, handleBlur } = useInputAnimation();
-  const [earnings, setEarnings] = useState(null);
-  const [withdrawals, setWithdrawals] = useState([]);
-  const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
   const [amount, setAmount] = useState("");
   const [accountInfo, setAccountInfo] = useState({
@@ -38,12 +37,8 @@ const InstructorWithdraw = () => {
   });
 
   const { userData: currentUser } = useSelector((state) => state.user);
+  const { earnings, withdrawals, status } = useSelector((state) => state.wallet);
   const isInstructor = currentUser?.role === 2;
-
-  useEffect(() => {
-    document.body.classList.toggle("dark", darkMode);
-    return () => document.body.classList.remove("dark", darkMode);
-  }, [darkMode]);
 
   useEffect(() => {
     if (!isInstructor) {
@@ -51,26 +46,13 @@ const InstructorWithdraw = () => {
       return;
     }
 
-    loadEarningsData();
-  }, [isInstructor]);
-
-  const loadEarningsData = async () => {
-    try {
-      setLoading(true);
-      // Load earnings
-      const earningsRes = await api.get("/api/withdrawal/earnings", {
-        withCredentials: true,
-      });
-      if (earningsRes.data?.success) {
-        setEarnings(earningsRes.data);
-        setWithdrawals(earningsRes.data.withdrawals || []);
-      }
-    } catch (error) {
-      console.error("Error loading earnings:", error);
-      toast.error("Failed to load earnings data");
-    } finally {
-      setLoading(false);
+    if (status === "idle") {
+      dispatch(fetchEarnings());
     }
+  }, [isInstructor, status, dispatch]);
+
+  const loadEarningsData = () => {
+    dispatch(fetchEarnings());
   };
 
   const handleAccountInfoChange = (key, value) => {

@@ -1,9 +1,10 @@
-import React, { useEffect, useState, memo } from "react";
+import React, { useEffect, useState, memo, useCallback } from "react";
 import api from "@services/api";
 import userAvatar from "../../../../assets/img/userAvatar.jpg";
 import { BiLike, BiSolidLike, BiComment, SiTelegram, BsThreeDots } from "@icons";
 import { PhotoView, PhotoProvider } from "react-photo-view";
 import { useNavigate } from "react-router-dom";
+import ConfirmModal from "../../../../components/ConfirmModal";
 
 const PostCard = ({ post, currentUserId, onPostDeleted }) => {
     const navigate = useNavigate();
@@ -17,12 +18,14 @@ const PostCard = ({ post, currentUserId, onPostDeleted }) => {
             setLiked(isLiked);
             setLikes(post.likes.length);
         }
+        setComments(post.comments);
     }, [post, currentUserId]);
     const [showComments, setShowComments] = useState(false);
     const [commentText, setCommentText] = useState("");
     const [comments, setComments] = useState(post.comments);
     const [loading, setLoading] = useState(false);
     const [showMenu, setShowMenu] = useState(false);
+    const [showDeleteModal, setShowDeleteModal] = useState(false);
 
     const isAuthor = post.author?._id === currentUserId;
 
@@ -71,17 +74,22 @@ const PostCard = ({ post, currentUserId, onPostDeleted }) => {
         }
     };
 
-    const handleDeletePost = async () => {
-        if (!window.confirm("Are you sure you want to delete this post?")) return;
+    const handleDeletePost = useCallback(async () => {
+        setShowMenu(false);
+        setShowDeleteModal(true);
+    }, []);
 
+    const confirmDeletePost = useCallback(async () => {
         try {
             await api.delete(`/api/post/${post._id}`);
             onPostDeleted(post._id);
         } catch (error) {
             console.error("Error deleting post:", error);
             alert("Failed to delete post");
+        } finally {
+            setShowDeleteModal(false);
         }
-    };
+    }, [post._id, onPostDeleted]);
 
     const formatDate = (date) => {
         const d = new Date(date);
@@ -98,7 +106,7 @@ const PostCard = ({ post, currentUserId, onPostDeleted }) => {
     };
 
     return (
-        <div className="post-card">
+        <><div className="post-card">
             <div className="post-card-header">
                 <div className="post-user-info">
                     <img
@@ -108,7 +116,7 @@ const PostCard = ({ post, currentUserId, onPostDeleted }) => {
                         onClick={() => navigate(`/profile/${post.author?.id || post.userId}`)}
                     />
                     <div className="user-details">
-                        <h3 className="post-author-name">{post.author?.name || "Deleted User"}</h3>
+                        <h3 className="post-author-name" onClick={() => navigate(`/profile/${post.author?.id || post.userId}`)} >{post.author?.name || "Deleted User"}</h3>
                         <p className="post-time" onClick={() => navigate(`/timeline/post/${post._id}`)}>{formatDate(post.createdAt)}</p>
                     </div>
                 </div>
@@ -212,12 +220,13 @@ const PostCard = ({ post, currentUserId, onPostDeleted }) => {
                                     src={comment.userPhoto || userAvatar}
                                     alt="user"
                                     className="comment-avatar"
+                                     onClick={()=> navigate(`/profile/${comment.userId._id}`)}
                                 />
                                 <div className="comment-content">
                                     <div className="comment-text">
                                         <div className="comment-user-container">
                                             <div className="comment-user">
-                                                <strong>{comment.userName}</strong>
+                                                <strong onClick={()=> navigate(`/profile/${comment.userId._id}`)}>{comment.userName}</strong>
                                                 <span className="stat">•</span>
                                                 <span className="comment-time">
                                                     {formatDate(comment.createdAt)}
@@ -244,6 +253,14 @@ const PostCard = ({ post, currentUserId, onPostDeleted }) => {
                 </div>
             )}
         </div>
+            <ConfirmModal
+                isOpen={showDeleteModal}
+                onClose={() => setShowDeleteModal(false)}
+                onConfirm={confirmDeletePost}
+                title="Delete Post"
+                message="Are you sure you want to delete this post? This action cannot be undone."
+            />
+        </>
     );
 };
 

@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react";
 import Header from "../../../components/Header";
 import Footer from "../../../components/Footer";
 import Carpentry from "../../../assets/img/cat1.jpg";
-import picProfile from "../../../assets/img/picProfile.jpg";
+import userAvatar from "../../../assets/img/userAvatar.jpg";
 import { FaPlay, FaStar } from "react-icons/fa";
 import { IoIosLock } from "react-icons/io";
 
@@ -12,7 +12,7 @@ import { MdReviews } from "react-icons/md";
 import { PiUserCircleDashedFill } from "react-icons/pi";
 import TestimonialsSwiper from "../../../components/TestimonialsSwiper";
 import { getCategoryLabel, getCategoryId } from "../../../constants/categories";
-import { useParams } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 import { api } from "@services/api";
 import axios from "axios";
 import { useSelector } from "react-redux";
@@ -40,7 +40,7 @@ const ViewCourse = () => {
   const [hoveredRating, setHoveredRating] = useState(0);
   const [newComment, setNewComment] = useState("");
   const [submittingReview, setSubmittingReview] = useState(false);
-
+  const navigate = useNavigate();
   useEffect(() => {
     if (course) {
       setReviewsList(course.reviews || []);
@@ -245,8 +245,8 @@ const ViewCourse = () => {
                   : `0.0 (0 ${t("Reviews")})`}
               </span>
             </div>
-            <div className="instructor">
-              <img src={picProfile} alt="" />
+            <div className="instructor" onClick={() => navigate(`/profile/${course?.creator._id}`)}>
+              <img src={course?.creator.photoUrl || userAvatar} alt="" />
               <span>{course?.creator.name} • {t("Instructor")}</span>
             </div>
 

@@ -9,6 +9,7 @@ import userReducer from "./userSlice";
 import courseSlice from "./courseSlice";
 import lectureSlice from "./lectureSlice";
 import postReducer from "./postSlice";
+import walletReducer from "./walletSlice";
 // Combine all feature reducers into a single root reducer
 const rootReducer = combineReducers({
   user: userReducer,         // Handles user authentication and profile state
@@ -16,6 +17,7 @@ const rootReducer = combineReducers({
   lecture: lectureSlice,     // Manages lectures within courses
   messages: messageReducer,  // Handles messaging and chat state
   posts: postReducer,        // Handles posts and related actions
+  wallet: walletReducer,     // Handles wallet/earnings data
 });
 // Configuration for Redux Persist
 const persistConfig = {
