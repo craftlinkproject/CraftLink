@@ -297,7 +297,7 @@ const ViewCourse = () => {
                     {reviewsList.length > 0 ? (
                       reviewsList.map((review) => (
                         <div className="review-card" key={review._id}>
-                          <img src={review.user?.photoUrl || picProfile} alt="" onError={(e) => { e.target.src = picProfile; }} />
+                          <img src={review.user?.photoUrl || userAvatar} alt="" onError={(e) => { e.target.src = userAvatar; }} />
                           <div className="review-card-content" style={{ flex: 1 }}>
                             <div className="review-card-header" style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "8px" }}>
                               <h4 style={{ margin: 0 }}>{review.user?.name || t("Anonymous")}</h4>
@@ -375,8 +375,8 @@ const ViewCourse = () => {
               )}
               {activeTab === "Instructor" && (
                 <div className="instructor-info">
-                  <div className="instructor-box">
-                    <img src={picProfile} alt="" />
+                  <div className="instructor-box" onClick={()=> navigate(`/profile/${course?.creator._id}`)}>
+                    <img src={course?.creator._id || userAvatar} alt="" />
                     <div>
                       <h3>{course?.creator.name}</h3>
                       <span>{t("Instructor")}</span>
