@@ -221,21 +221,28 @@ export const verifyPayment = async (req, res) => {
     const userId = req.userId;
     const { orderId, transactionId } = req.body;
 
+    console.log(`\n=== VERIFY PAYMENT [userId=${userId}, orderId=${orderId}, transactionId=${transactionId}] ===`);
+
     if (!orderId) {
+      console.log("[verifyPayment] ✗ Missing orderId");
       return res.status(400).json({ success: false, message: "Missing orderId" });
     }
 
     const payment = await Payment.findOne({ orderId: String(orderId), user: userId });
     if (!payment) {
+      console.log(`[verifyPayment] ✗ Payment not found for orderId=${orderId}, userId=${userId}`);
       return res.status(404).json({ success: false, message: "Payment not found or not authorized" });
     }
 
-    // If payment is already marked as success (e.g., from webhook), return success immediately
+    console.log(`[verifyPayment] Found payment: id=${payment._id}, status="${payment.status}", amount=${payment.amount}, course=${payment.course}`);
+
+    // PATH 1: Payment already marked success in DB (webhook/callback already fired)
     if (payment.status === "success") {
+      console.log("[verifyPayment] PATH 1: payment.status === 'success' — already verified, enrolling...");
       try {
         await enrollUserInCourse(userId, payment.course, req.app.get("io"));
       } catch (enrollErr) {
-        console.error("Enrollment error in verifyPayment (success status):", enrollErr);
+        console.error("[verifyPayment] Enrollment error in PATH 1:", enrollErr);
       }
       return res.status(200).json({
         success: true,
@@ -245,8 +252,9 @@ export const verifyPayment = async (req, res) => {
       });
     }
 
-    // If payment is success/paid, enroll + credit + return success
+    // PATH 2: Payment status is "paid" (set by verifyPaymobTransaction)
     if (["paid", "success"].includes(payment.status)) {
+      console.log(`[verifyPayment] PATH 2: payment.status in ["paid","success"] — enrolling & crediting...`);
       await enrollUserInCourse(userId, payment.course, req.app.get("io"));
 
       const course = await Course.findById(payment.course).populate('creator');
@@ -255,7 +263,7 @@ export const verifyPayment = async (req, res) => {
           { $inc: { balance: payment.amount } },
           { new: true }
         );
-        console.log(`✅ Credited ${payment.amount} EGP to trainer ${course.creator._id}`);
+        console.log(`[verifyPayment] Credited ${payment.amount} EGP to trainer ${course.creator._id}`);
       }
 
       return res.json({
@@ -266,20 +274,23 @@ export const verifyPayment = async (req, res) => {
       });
     }
 
-    // If transactionId provided by frontend (from Paymob redirect URL), verify it directly
+    // PATH 3: Transaction ID provided by frontend (from Paymob redirect URL)
     if (transactionId) {
-      console.log("Verifying transaction directly:", transactionId);
+      console.log(`[verifyPayment] PATH 3: Verifying transactionId=${transactionId} directly with Paymob...`);
       const txnResult = await verifyTransactionWithPaymob(transactionId);
+      console.log(`[verifyPayment] PATH 3 result:`, txnResult);
       if (txnResult.success) {
+        console.log(`[verifyPayment] PATH 3: Transaction confirmed! Updating DB...`);
         payment.status = "success";
         payment.transactionId = String(transactionId);
         payment.paymentResponse = txnResult.data;
         await payment.save();
+        console.log(`[verifyPayment] PATH 3: DB updated to success. Enrolling...`);
 
         try {
           await enrollUserInCourse(userId, payment.course, req.app.get("io"));
         } catch (enrollErr) {
-          console.error("Enrollment error in verifyPayment (txn):", enrollErr);
+          console.error("[verifyPayment] Enrollment error in PATH 3:", enrollErr);
         }
 
         const course = await Course.findById(payment.course).populate('creator');
@@ -297,29 +308,27 @@ export const verifyPayment = async (req, res) => {
           message: "Payment verified successfully via transaction"
         });
       }
-      console.log("Direct transaction verification failed, falling back to order check");
+      console.log(`[verifyPayment] PATH 3: Transaction verification failed, falling to PATH 4`);
+    } else {
+      console.log(`[verifyPayment] PATH 3: No transactionId provided (txn_id null in URL), skipping...`);
     }
 
-
-
-    // Payment is still pending in DB, check Paymob directly as fallback
+    // PATH 4: Check Paymob order status API directly
+    console.log(`[verifyPayment] PATH 4: Checking Paymob order status for orderId=${orderId}...`);
     try {
-      console.log("Payment still pending in DB, checking Paymob directly...");
       const paymobStatus = await checkPaymobOrderStatus(orderId);
+      console.log(`[verifyPayment] PATH 4: checkPaymobOrderStatus returned: "${paymobStatus}"`);
 
       if (paymobStatus && paymobStatus.toUpperCase() === "PAID") {
-        console.log("Paymob confirms payment is PAID, updating database...");
-
-        // Update payment status in database
+        console.log(`[verifyPayment] PATH 4: Paymob confirms PAID! Updating DB from "${payment.status}" to "success"...`);
         payment.status = "success";
         await payment.save();
+        console.log(`[verifyPayment] PATH 4: DB updated. Enrolling...`);
 
-        // Enroll user in course
         try {
           await enrollUserInCourse(userId, payment.course, req.app.get("io"));
         } catch (enrollErr) {
-          console.error("Enrollment error in verifyPayment:", enrollErr);
-          // Don't fail if enrollment has issues - payment is still successful
+          console.error("[verifyPayment] Enrollment error in PATH 4:", enrollErr);
         }
 
         return res.status(200).json({
@@ -329,15 +338,24 @@ export const verifyPayment = async (req, res) => {
           message: "Payment verified successfully via Paymob"
         });
       }
+      console.log(`[verifyPayment] PATH 4: Paymob did NOT confirm PAID (got "${paymobStatus}")`);
     } catch (paymobErr) {
-      console.error("Error checking Paymob status:", paymobErr);
-      // Re-query payment from DB - webhook may have updated it during Paymob check
+      console.error(`[verifyPayment] PATH 4: checkPaymobOrderStatus threw:`, paymobErr.message);
+      if (paymobErr.response) {
+        console.error(`[verifyPayment] Paymob API error status:`, paymobErr.response.status);
+        console.error(`[verifyPayment] Paymob API error data:`, JSON.stringify(paymobErr.response.data, null, 2));
+      }
+
+      // PATH 4a: Paymob API call failed — re-query DB (webhook may have fired during)
+      console.log(`[verifyPayment] PATH 4a: Re-querying DB after Paymob error...`);
       const refreshed = await Payment.findOne({ orderId: String(orderId), user: userId });
+      console.log(`[verifyPayment] PATH 4a: DB status after re-query: "${refreshed?.status}"`);
       if (refreshed && ["paid", "success"].includes(refreshed.status)) {
+        console.log(`[verifyPayment] PATH 4a: DB was updated! Enrolling...`);
         try {
           await enrollUserInCourse(userId, refreshed.course, req.app.get("io"));
         } catch (enrollErr) {
-          console.error("Enrollment error in verifyPayment (catch success):", enrollErr);
+          console.error("[verifyPayment] Enrollment error in PATH 4a:", enrollErr);
         }
         return res.status(200).json({
           success: true,
@@ -346,15 +364,19 @@ export const verifyPayment = async (req, res) => {
           message: "Payment verified successfully"
         });
       }
+      console.log(`[verifyPayment] PATH 4a: DB still "${refreshed?.status}", continuing to PATH 5...`);
     }
 
-    // Final re-query before giving up - webhook may have fired during processing
+    // PATH 5: Final DB re-query before giving up
+    console.log(`[verifyPayment] PATH 5: Final DB re-query...`);
     const finalCheck = await Payment.findOne({ orderId: String(orderId), user: userId });
+    console.log(`[verifyPayment] PATH 5: Final DB status: "${finalCheck?.status}"`);
     if (finalCheck && ["paid", "success"].includes(finalCheck.status)) {
+      console.log(`[verifyPayment] PATH 5: DB was updated! Enrolling...`);
       try {
         await enrollUserInCourse(userId, finalCheck.course, req.app.get("io"));
       } catch (enrollErr) {
-        console.error("Enrollment error in verifyPayment (final check):", enrollErr);
+        console.error("[verifyPayment] Enrollment error in PATH 5:", enrollErr);
       }
       return res.status(200).json({
         success: true,
@@ -364,6 +386,9 @@ export const verifyPayment = async (req, res) => {
       });
     }
 
+    // PATH 6: All verification methods exhausted
+    console.log(`[verifyPayment] PATH 6: All verification methods exhausted. Returning pending.`);
+    console.log(`[verifyPayment] === END VERIFY (FAILED) ===\n`);
     return res.status(200).json({
       success: false,
       course: (finalCheck || payment).course,
@@ -371,32 +396,84 @@ export const verifyPayment = async (req, res) => {
       message: "Payment not yet confirmed by Paymob. Please try again or contact support."
     });
   } catch (error) {
-    console.error("verifyPayment error:", error);
+    console.error("[verifyPayment] UNEXPECTED ERROR:", error);
     return res.status(500).json({ success: false, message: "Failed to verify payment" });
   }
 };
 
 /* ================== CHECK PAYMOB ORDER STATUS ================== */
 const checkPaymobOrderStatus = async (orderId) => {
-  try {
+  const doCheck = async () => {
     const authToken = await getAuthToken();
+    console.log(`[checkPaymobOrderStatus] Querying Paymob order ${orderId}...`);
     const res = await axios.get(`${PAYMOB_API_URL}/ecommerce/orders/${orderId}`, {
       headers: { Authorization: `Bearer ${authToken}` },
     });
+    return res;
+  };
 
-    console.log("Paymob order status response:", res.data.payment_status, "paid_amount:", res.data.paid_amount_cents);
+  try {
+    const res = await doCheck();
 
-    // Check payment_status (case-insensitive) OR paid_amount_cents > 0
+    // LOG THE FULL RESPONSE
+    console.log("[checkPaymobOrderStatus] FULL Paymob response:", JSON.stringify(res.data, null, 2));
+    console.log("[checkPaymobOrderStatus] payment_status:", res.data.payment_status);
+    console.log("[checkPaymobOrderStatus] paid_amount_cents:", res.data.paid_amount_cents);
+    console.log("[checkPaymobOrderStatus] is_paid:", res.data.is_paid);
+    console.log("[checkPaymobOrderStatus] is_payment_locked:", res.data.is_payment_locked);
+    console.log("[checkPaymobOrderStatus] all keys:", Object.keys(res.data).join(", "));
+
     const paymentStatus = res.data.payment_status;
-    if (paymentStatus && paymentStatus.toUpperCase() === "PAID") {
-      return "PAID";
+
+    // Check ALL possible success values from Paymob
+    if (paymentStatus) {
+      const upper = paymentStatus.toUpperCase();
+      console.log("[checkPaymobOrderStatus] normalized payment_status:", upper);
+      if (["PAID", "SUCCESS", "CAPTURED", "COMPLETED"].includes(upper)) {
+        console.log("[checkPaymobOrderStatus] ✓ Matched payment_status:", paymentStatus);
+        return "PAID";
+      }
     }
+
+    // Fallback: paid_amount_cents > 0 means someone paid
     if (res.data.paid_amount_cents > 0) {
+      console.log("[checkPaymobOrderStatus] ✓ paid_amount_cents > 0:", res.data.paid_amount_cents);
       return "PAID";
     }
+
+    // Fallback: is_paid flag if present
+    if (res.data.is_paid === true) {
+      console.log("[checkPaymobOrderStatus] ✓ is_paid is true");
+      return "PAID";
+    }
+
+    console.log("[checkPaymobOrderStatus] ✗ Payment NOT confirmed. Status:", paymentStatus, "paid_amount_cents:", res.data.paid_amount_cents);
     return paymentStatus || "PENDING";
   } catch (error) {
-    console.error("Error checking Paymob order status:", error);
+    console.error("[checkPaymobOrderStatus] ✗ Error:", error.message);
+    if (error.response) {
+      console.error("[checkPaymobOrderStatus] Response status:", error.response.status);
+      console.error("[checkPaymobOrderStatus] Response data:", JSON.stringify(error.response.data, null, 2));
+    }
+
+    // If auth token expired/invalid, invalidate cache and retry ONCE with fresh token
+    if (error.response && [401, 403].includes(error.response.status)) {
+      console.log("[checkPaymobOrderStatus] Auth token invalid, refreshing and retrying...");
+      cachedToken = null;
+      tokenExpiry = 0;
+      try {
+        const res = await doCheck();
+        console.log("[checkPaymobOrderStatus] Retry succeeded! Response:", JSON.stringify(res.data, null, 2));
+        const paymentStatus = res.data.payment_status;
+        if (paymentStatus && ["PAID", "SUCCESS", "CAPTURED", "COMPLETED"].includes(paymentStatus.toUpperCase())) return "PAID";
+        if (res.data.paid_amount_cents > 0) return "PAID";
+        if (res.data.is_paid === true) return "PAID";
+        return paymentStatus || "PENDING";
+      } catch (retryErr) {
+        console.error("[checkPaymobOrderStatus] Retry also failed:", retryErr.message);
+      }
+    }
+
     throw error;
   }
 };
@@ -534,44 +611,58 @@ export const getPaymentStatus = async (req, res) => {
 export const paymentCallback = async (req, res) => {
   try {
     const data = req.body;
-    console.log("Payment callback received:", JSON.stringify(data, null, 2));
+    console.log("\n=== PAYMENT CALLBACK RECEIVED ===");
+    console.log("Headers:", JSON.stringify(req.headers, null, 2));
+    console.log("Body:", JSON.stringify(data, null, 2));
+    console.log("Body keys:", Object.keys(data || {}).join(", "));
+    console.log("data.success:", data?.success);
+    console.log("data.order:", data?.order);
+    console.log("data.id (txn):", data?.id);
+    console.log("data.hmac:", data?.hmac);
+    console.log("data.merchant_order_id:", data?.merchant_order_id);
 
-    // Similar logic to webhook
     if (data.success === true) {
-      const orderId = data.order.id;
+      const orderId = data.order?.id;
       const transactionId = data.id;
+      console.log(`Callback: success=true, orderId="${orderId}", transactionId="${transactionId}"`);
 
-      const payment = await Payment.findOne({ orderId: String(orderId) });
-      if (!payment) {
-        console.log("Payment not found for orderId:", orderId);
-        return res.sendStatus(200);
-      }
+      if (orderId) {
+        const payment = await Payment.findOne({ orderId: String(orderId) });
+        if (!payment) {
+          console.log(`Callback: Payment NOT FOUND for orderId="${orderId}"`);
+        } else {
+          console.log(`Callback: Found payment, current status="${payment.status}"`);
+          payment.status = "success";
+          payment.transactionId = String(transactionId);
+          payment.paymentResponse = data;
+          await payment.save();
+          console.log(`Callback: Payment "${orderId}" updated to "success" in DB`);
 
-      payment.status = "success";
-      payment.transactionId = String(transactionId);
-      payment.paymentResponse = data;
-      await payment.save();
+          await enrollUserInCourse(payment.user, payment.course, req.app.get("io"));
 
-      await enrollUserInCourse(payment.user, payment.course, req.app.get("io"));
+          try {
+            const course = await Course.findById(payment.course).populate('creator');
+            if (course?.creator?.role === 2) {
+              await User.findByIdAndUpdate(course.creator._id,
+                { $inc: { balance: payment.amount } },
+                { new: true }
+              );
+              console.log(`Callback: Credited ${payment.amount} EGP to trainer ${course.creator._id}`);
+            }
+          } catch (balanceErr) {
+            console.error("Callback: Error crediting trainer:", balanceErr);
+          }
 
-      // Credit trainer balance
-      try {
-        const course = await Course.findById(payment.course).populate('creator');
-        if (course?.creator?.role === 2) {
-          await User.findByIdAndUpdate(course.creator._id,
-            { $inc: { balance: payment.amount } },
-            { new: true }
-          );
-          console.log(`Credited ${payment.amount} EGP to trainer ${course.creator._id} (callback)`);
+          console.log(`Callback: Successfully processed for orderId="${orderId}"`);
         }
-      } catch (balanceErr) {
-        console.error("Error crediting trainer balance (callback):", balanceErr);
+      } else {
+        console.log("Callback: No order.id in payload!");
       }
-
-      console.log("Callback processed successfully for orderId:", orderId);
+    } else {
+      console.log(`Callback: success is NOT true (value=${data?.success}), ignoring...`);
     }
 
-
+    console.log("=== END CALLBACK ===\n");
     res.sendStatus(200);
   } catch (error) {
     console.error("Callback error:", error);

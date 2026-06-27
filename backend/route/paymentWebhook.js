@@ -9,24 +9,45 @@ const router = express.Router();
 router.post("/paymob-webhook", async (req, res) => {
   try {
     const data = req.body;
-    console.log("Paymob webhook received:", JSON.stringify(data, null, 2));
+    console.log("\n=== PAYMOB WEBHOOK RECEIVED ===");
+    console.log("Headers:", JSON.stringify(req.headers, null, 2));
+    console.log("Body:", JSON.stringify(data, null, 2));
+    console.log("Body keys:", Object.keys(data || {}).join(", "));
+    console.log("data.success:", data?.success);
+    console.log("data.order:", data?.order);
+    console.log("data.id (txn):", data?.id);
+    console.log("data.hmac:", data?.hmac);
+    console.log("data.type:", data?.type);
 
     if (data.success === true) {
-      const orderId = data.order.id;
+      const orderId = data.order?.id;
       const transactionId = data.id;
+      console.log(`Webhook: success=true, orderId="${orderId}", transactionId="${transactionId}"`);
+
+      if (!orderId) {
+        console.log("Webhook: No order.id in payload!");
+        res.sendStatus(200);
+        console.log("=== END WEBHOOK (no orderId) ===\n");
+        return;
+      }
 
       // Find payment by orderId
       const payment = await Payment.findOne({ orderId: String(orderId) });
       if (!payment) {
-        console.log("Payment not found for orderId:", orderId);
-        return res.sendStatus(200);
+        console.log(`Webhook: Payment NOT FOUND for orderId="${orderId}"`);
+        res.sendStatus(200);
+        console.log("=== END WEBHOOK (payment not found) ===\n");
+        return;
       }
+
+      console.log(`Webhook: Found payment, current status="${payment.status}"`);
 
       // Update payment status
       payment.status = "success";
       payment.transactionId = String(transactionId);
       payment.paymentResponse = data;
       await payment.save();
+      console.log(`Webhook: Payment "${orderId}" updated to "success" in DB`);
 
       // Enroll user in course
       const io = req.app.get("io");
@@ -35,14 +56,14 @@ router.post("/paymob-webhook", async (req, res) => {
         { $addToSet: { enrolledCraftsmen: payment.user } },
         { new: true }
       );
-      console.log("Course enrollment success:", courseUpdate ? "yes" : "no");
+      console.log("Webhook: Course enrollment:", courseUpdate ? "yes" : "no");
 
       const userUpdate = await User.findByIdAndUpdate(
         payment.user,
         { $addToSet: { enrolledCourses: payment.course } },
         { new: true }
       );
-      console.log("User enrollment success:", userUpdate ? "yes" : "no");
+      console.log("Webhook: User enrollment:", userUpdate ? "yes" : "no");
 
       // Notify course creator
       if (courseUpdate?.creator) {
@@ -62,12 +83,16 @@ router.post("/paymob-webhook", async (req, res) => {
         });
       }
 
-      console.log("Webhook processed successfully for orderId:", orderId);
+      console.log(`Webhook: Successfully processed for orderId="${orderId}"`);
+    } else {
+      console.log(`Webhook: success is NOT true (value=${data?.success}), ignoring...`);
     }
 
+    console.log("=== END WEBHOOK ===\n");
     res.sendStatus(200);
   } catch (error) {
     console.error("Webhook error:", error);
+    console.log("=== END WEBHOOK (error) ===\n");
     res.sendStatus(500);
   }
 });

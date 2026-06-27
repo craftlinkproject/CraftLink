@@ -102,8 +102,24 @@ const PaymentSuccess = () => {
   };
 
   useEffect(() => {
+    // Log the COMPLETE URL and ALL search params
+    console.log("=== PAYMENT SUCCESS PAGE LOADED ===");
+    console.log("Full URL:", window.location.href);
+    console.log("Full search:", window.location.search);
+
+    // Log ALL query parameters
+    const allParams = {};
+    for (const [key, value] of searchParams.entries()) {
+      allParams[key] = value;
+    }
+    console.log("All search params:", allParams);
+
     const orderId = searchParams.get("orderId") || searchParams.get("order");
     const txnId = searchParams.get("txn_id");
+    const successParam = searchParams.get("success");
+    console.log("Extracted - orderId:", orderId, "txnId:", txnId, "successParam:", successParam);
+    console.log("================================");
+
     if (!orderId) {
       safeSetState(setStatus, "failed");
       safeSetState(setError, "Invalid payment session - missing orderId");
@@ -115,7 +131,7 @@ const PaymentSuccess = () => {
       return;
     }
 
-    console.log("Payment redirect params:", { orderId, txnId });
+    console.log("Starting verifyPaymentWithRetry with:", { orderId, txnId });
     verifyPaymentWithRetry(orderId, txnId);
 
     return () => {
