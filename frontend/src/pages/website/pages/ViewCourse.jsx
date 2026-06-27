@@ -376,7 +376,7 @@ const ViewCourse = () => {
               {activeTab === "Instructor" && (
                 <div className="instructor-info">
                   <div className="instructor-box" onClick={()=> navigate(`/profile/${course?.creator._id}`)}>
-                    <img src={course?.creator._id || userAvatar} alt="" />
+                    <img src={course?.creator.photoUrl || userAvatar} alt="" />
                     <div>
                       <h3>{course?.creator.name}</h3>
                       <span>{t("Instructor")}</span>
