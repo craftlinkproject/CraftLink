@@ -21,7 +21,7 @@ const PaymentSuccess = () => {
     }
   };
 
-  const verifyPaymentWithRetry = async (orderId) => {
+  const verifyPaymentWithRetry = async (orderId, txnId) => {
     safeSetState(setLoading, true);
     safeSetState(setStatus, "verifying");
 
@@ -47,9 +47,12 @@ const PaymentSuccess = () => {
       }
 
       try {
+        const payload = { orderId };
+        if (txnId) payload.transactionId = txnId;
+
         const res = await api.post(
           `/api/payment/verify-payment`,
-          { orderId },
+          payload,
           { withCredentials: true }
         );
 
@@ -86,8 +89,9 @@ const PaymentSuccess = () => {
 
   const handleRetry = () => {
     const orderId = searchParams.get("orderId");
+    const txnId = searchParams.get("txn_id");
     if (orderId) {
-      verifyPaymentWithRetry(orderId);
+      verifyPaymentWithRetry(orderId, txnId);
     }
   };
 
@@ -99,6 +103,7 @@ const PaymentSuccess = () => {
 
   useEffect(() => {
     const orderId = searchParams.get("orderId");
+    const txnId = searchParams.get("txn_id");
     if (!orderId) {
       safeSetState(setStatus, "failed");
       safeSetState(setError, "Invalid payment session - missing orderId");
@@ -110,7 +115,8 @@ const PaymentSuccess = () => {
       return;
     }
 
-    verifyPaymentWithRetry(orderId);
+    console.log("Payment redirect params:", { orderId, txnId });
+    verifyPaymentWithRetry(orderId, txnId);
 
     return () => {
       mountedRef.current = false;

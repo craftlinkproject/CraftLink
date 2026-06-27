@@ -194,10 +194,24 @@ export const createPayment = async (req, res) => {
 };
 
 /* ================== VERIFY PAYMENT & AUTO-ENROLL ================== */
+const verifyTransactionWithPaymob = async (transactionId) => {
+  try {
+    const authToken = await getAuthToken();
+    const verifyRes = await axios.get(
+      `${PAYMOB_API_URL}/acceptance/transactions/${transactionId}`,
+      { headers: { Authorization: `Bearer ${authToken}` } }
+    );
+    return { success: verifyRes.data.success === true, data: verifyRes.data };
+  } catch (err) {
+    console.error("verifyTransactionWithPaymob error:", err.message);
+    return { success: false, data: null };
+  }
+};
+
 export const verifyPayment = async (req, res) => {
   try {
     const userId = req.userId;
-    const { orderId } = req.body;
+    const { orderId, transactionId } = req.body;
 
     if (!orderId) {
       return res.status(400).json({ success: false, message: "Missing orderId" });
@@ -210,7 +224,6 @@ export const verifyPayment = async (req, res) => {
 
     // If payment is already marked as success (e.g., from webhook), return success immediately
     if (payment.status === "success") {
-      // Ensure user is enrolled
       try {
         await enrollUserInCourse(userId, payment.course, req.app.get("io"));
       } catch (enrollErr) {
@@ -226,10 +239,8 @@ export const verifyPayment = async (req, res) => {
 
     // If payment is success/paid, enroll + credit + return success
     if (["paid", "success"].includes(payment.status)) {
-      // Ensure enrollment
       await enrollUserInCourse(userId, payment.course, req.app.get("io"));
 
-      // Credit trainer if not already (idempotent)
       const course = await Course.findById(payment.course).populate('creator');
       if (course?.creator?.role === 2) {
         await User.findByIdAndUpdate(course.creator._id,
@@ -247,6 +258,40 @@ export const verifyPayment = async (req, res) => {
       });
     }
 
+    // If transactionId provided by frontend (from Paymob redirect URL), verify it directly
+    if (transactionId) {
+      console.log("Verifying transaction directly:", transactionId);
+      const txnResult = await verifyTransactionWithPaymob(transactionId);
+      if (txnResult.success) {
+        payment.status = "success";
+        payment.transactionId = String(transactionId);
+        payment.paymentResponse = txnResult.data;
+        await payment.save();
+
+        try {
+          await enrollUserInCourse(userId, payment.course, req.app.get("io"));
+        } catch (enrollErr) {
+          console.error("Enrollment error in verifyPayment (txn):", enrollErr);
+        }
+
+        const course = await Course.findById(payment.course).populate('creator');
+        if (course?.creator?.role === 2) {
+          await User.findByIdAndUpdate(course.creator._id,
+            { $inc: { balance: payment.amount } },
+            { new: true }
+          );
+        }
+
+        return res.status(200).json({
+          success: true,
+          course: payment.course,
+          orderId: payment.orderId,
+          message: "Payment verified successfully via transaction"
+        });
+      }
+      console.log("Direct transaction verification failed, falling back to order check");
+    }
+
 
 
     // Payment is still pending in DB, check Paymob directly as fallback
@@ -254,7 +299,7 @@ export const verifyPayment = async (req, res) => {
       console.log("Payment still pending in DB, checking Paymob directly...");
       const paymobStatus = await checkPaymobOrderStatus(orderId);
 
-      if (paymobStatus === "PAID") {
+      if (paymobStatus && paymobStatus.toUpperCase() === "PAID") {
         console.log("Paymob confirms payment is PAID, updating database...");
 
         // Update payment status in database
@@ -331,8 +376,17 @@ const checkPaymobOrderStatus = async (orderId) => {
       headers: { Authorization: `Bearer ${authToken}` },
     });
 
-    console.log("Paymob order status response:", res.data.payment_status);
-    return res.data.payment_status; // "PAID", "PENDING", etc.
+    console.log("Paymob order status response:", res.data.payment_status, "paid_amount:", res.data.paid_amount_cents);
+
+    // Check payment_status (case-insensitive) OR paid_amount_cents > 0
+    const paymentStatus = res.data.payment_status;
+    if (paymentStatus && paymentStatus.toUpperCase() === "PAID") {
+      return "PAID";
+    }
+    if (res.data.paid_amount_cents > 0) {
+      return "PAID";
+    }
+    return paymentStatus || "PENDING";
   } catch (error) {
     console.error("Error checking Paymob order status:", error);
     throw error;
