@@ -39,6 +39,7 @@ import { getCategoryLabel, getCategoryId } from "../../../constants/categories";
 import userAvatar from "../../../assets/img/userAvatar.jpg";
 import image from "../../../assets/img/image.png";
 import { useTranslation } from "react-i18next";
+import api from "@services/api";
 const Profile = () => {
   const { i18n, t } = useTranslation();
   const [selectedCert, setSelectedCert] = React.useState(null);
@@ -320,7 +321,15 @@ const Profile = () => {
                           key={post._id}
                           post={post}
                           currentUserId={currentUser._id}
-                          onPostDeleted={(id) => setUserPosts(prev => prev.filter(p => p._id !== id))}
+                          onPostDeleted={async (id) => {
+                            try {
+                              await api.delete(`/api/post/${id}`);
+                              setUserPosts(prev => prev.filter(p => p._id !== id));
+                            } catch (error) {
+                              console.error("Error deleting post:", error);
+                              alert("Failed to delete post");
+                            }
+                          }}
                         />
                       ))
                     )}

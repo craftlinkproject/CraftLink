@@ -81,11 +81,9 @@ const PostCard = ({ post, currentUserId, onPostDeleted }) => {
 
     const confirmDeletePost = useCallback(async () => {
         try {
-            await api.delete(`/api/post/${post._id}`);
-            onPostDeleted(post._id);
+            await onPostDeleted(post._id);
         } catch (error) {
             console.error("Error deleting post:", error);
-            alert("Failed to delete post");
         } finally {
             setShowDeleteModal(false);
         }
