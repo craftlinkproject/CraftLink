@@ -278,30 +278,44 @@ export const verifyPayment = async (req, res) => {
       }
     } catch (paymobErr) {
       console.error("Error checking Paymob status:", paymobErr);
-      // If status was updated to success by webhook during check, return success
-      if (payment.status === "success") {
-        // Ensure user is enrolled
+      // Re-query payment from DB - webhook may have updated it during Paymob check
+      const refreshed = await Payment.findOne({ orderId: String(orderId), user: userId });
+      if (refreshed && ["paid", "success"].includes(refreshed.status)) {
         try {
-          await enrollUserInCourse(userId, payment.course, req.app.get("io"));
+          await enrollUserInCourse(userId, refreshed.course, req.app.get("io"));
         } catch (enrollErr) {
           console.error("Enrollment error in verifyPayment (catch success):", enrollErr);
         }
         return res.status(200).json({
           success: true,
-          course: payment.course,
-          orderId: payment.orderId,
+          course: refreshed.course,
+          orderId: refreshed.orderId,
           message: "Payment verified successfully"
         });
       }
-      // Continue with pending status if Paymob check fails
     }
 
-    // Payment still not confirmed
+    // Final re-query before giving up - webhook may have fired during processing
+    const finalCheck = await Payment.findOne({ orderId: String(orderId), user: userId });
+    if (finalCheck && ["paid", "success"].includes(finalCheck.status)) {
+      try {
+        await enrollUserInCourse(userId, finalCheck.course, req.app.get("io"));
+      } catch (enrollErr) {
+        console.error("Enrollment error in verifyPayment (final check):", enrollErr);
+      }
+      return res.status(200).json({
+        success: true,
+        course: finalCheck.course,
+        orderId: finalCheck.orderId,
+        message: "Payment verified successfully"
+      });
+    }
+
     return res.status(200).json({
       success: false,
-      course: payment.course,
-      status: payment.status,
-      message: "Payment not yet confirmed"
+      course: (finalCheck || payment).course,
+      status: (finalCheck || payment).status,
+      message: "Payment not yet confirmed by Paymob. Please try again or contact support."
     });
   } catch (error) {
     console.error("verifyPayment error:", error);

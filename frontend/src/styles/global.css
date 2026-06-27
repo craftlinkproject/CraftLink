@@ -9577,6 +9577,46 @@ html[dir="rtl"] .button-content {
   color: #9ca3af;
 }
 
+.pay-actions {
+  display: flex;
+  gap: 12px;
+  justify-content: center;
+  margin-top: 20px;
+}
+
+.pay-btn {
+  padding: 10px 24px;
+  border: none;
+  border-radius: 8px;
+  font-size: 15px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: opacity 0.2s;
+}
+
+.pay-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.pay-btn.retry {
+  background: #007bff;
+  color: #fff;
+}
+
+.pay-btn.retry:hover:not(:disabled) {
+  background: #0056b3;
+}
+
+.pay-btn.home {
+  background: #e5e7eb;
+  color: #374151;
+}
+
+.pay-btn.home:hover {
+  background: #d1d5db;
+}
+
 /* =========================================
 CHAT BOT
 ========================================= */
