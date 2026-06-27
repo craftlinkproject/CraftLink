@@ -164,6 +164,12 @@ export const createPayment = async (req, res) => {
       return res.status(400).json({ success: false, message: "Amount must be a positive number" });
     }
 
+    // Only craftsmen (role=1) can purchase courses
+    if (!req.user || req.user.role !== 1) {
+      console.log("Payment blocked: non-craftsman user attempted purchase. userId:", userId, "role:", req.user?.role);
+      return res.status(403).json({ success: false, message: "Only craftsmen can purchase courses" });
+    }
+
     try {
       const authToken = await getAuthToken();
       console.log("Auth token obtained");
