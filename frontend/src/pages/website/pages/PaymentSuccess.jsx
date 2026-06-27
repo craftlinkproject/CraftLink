@@ -88,10 +88,12 @@ const PaymentSuccess = () => {
   };
 
   const handleRetry = () => {
-    const orderId = searchParams.get("orderId");
+    const orderId = searchParams.get("orderId") || searchParams.get("order");
     const txnId = searchParams.get("txn_id");
+    const paymobId = searchParams.get("id");
+    const transactionId = txnId || paymobId;
     if (orderId) {
-      verifyPaymentWithRetry(orderId, txnId);
+      verifyPaymentWithRetry(orderId, transactionId);
     }
   };
 
@@ -102,23 +104,38 @@ const PaymentSuccess = () => {
   };
 
   useEffect(() => {
-    // Log the COMPLETE URL and ALL search params
     console.log("=== PAYMENT SUCCESS PAGE LOADED ===");
     console.log("Full URL:", window.location.href);
     console.log("Full search:", window.location.search);
 
-    // Log ALL query parameters
     const allParams = {};
     for (const [key, value] of searchParams.entries()) {
       allParams[key] = value;
     }
-    console.log("All search params:", allParams);
+    console.log("All search params:", JSON.stringify(allParams, null, 2));
 
     const orderId = searchParams.get("orderId") || searchParams.get("order");
     const txnId = searchParams.get("txn_id");
+    const paymobId = searchParams.get("id");
     const successParam = searchParams.get("success");
-    console.log("Extracted - orderId:", orderId, "txnId:", txnId, "successParam:", successParam);
+    const paymobError = searchParams.get("data.message");
+    const errorOccurred = searchParams.get("error_occured");
+
+    console.log("Extracted - orderId:", orderId,
+      "txnId:", txnId, "paymobId:", paymobId,
+      "success:", successParam, "error:", paymobError,
+      "error_occured:", errorOccurred);
     console.log("================================");
+
+    // If Paymob explicitly says success=false, the payment failed on Paymob's side
+    if (successParam === "false" || errorOccurred === "true") {
+      console.log("Paymob reports payment FAILED:", paymobError || "Unknown Paymob error");
+      safeSetState(setStatus, "failed");
+      safeSetState(setError, paymobError || "Payment declined by Paymob. Please try a different card.");
+      toast.error("Payment failed: " + (paymobError || "Card declined"));
+      safeSetState(setLoading, false);
+      return;
+    }
 
     if (!orderId) {
       safeSetState(setStatus, "failed");
@@ -131,8 +148,10 @@ const PaymentSuccess = () => {
       return;
     }
 
-    console.log("Starting verifyPaymentWithRetry with:", { orderId, txnId });
-    verifyPaymentWithRetry(orderId, txnId);
+    // Paymob returns transaction ID as "id", not "txn_id"
+    const transactionId = txnId || paymobId;
+    console.log("Starting verifyPaymentWithRetry with:", { orderId, transactionId });
+    verifyPaymentWithRetry(orderId, transactionId);
 
     return () => {
       mountedRef.current = false;
