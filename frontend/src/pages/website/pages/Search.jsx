@@ -418,7 +418,7 @@ const AICourseSearch = () => {
       {/* Suggestions when results are few or none */}
       {suggestionCourses.length > 0 && (
         <section className="container-wrapper section-layout popular-courses">
-          <h3 style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+          <h3 style={{ display: "flex", alignItems: "center", gap: "8px", color: "var(--text-secondary)", paddingBottom: "15px" }}>
             <BsArrowUpCircle style={{ color: "var(--main-color, #2563eb)" }} />
             {t("You might also like")}
           </h3>
