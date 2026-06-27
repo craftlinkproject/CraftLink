@@ -59,14 +59,22 @@ const enrollUserInCourse = async (userId, courseId, io) => {
 
 /* ================== CREATE PAYMENT ================== */
 
+let cachedToken = null;
+let tokenExpiry = 0;
+
 const getAuthToken = async () => {
+  if (cachedToken && Date.now() < tokenExpiry) {
+    return cachedToken;
+  }
   try {
     console.log("Requesting auth token from Paymob...");
     const res = await axios.post(`${PAYMOB_API_URL}/auth/tokens`, {
       api_key: PAYMOB_API_KEY,
     });
-    console.log("Auth token received successfully");
-    return res.data.token;
+    cachedToken = res.data.token;
+    tokenExpiry = Date.now() + 55 * 60 * 1000;
+    console.log("Auth token received successfully, cached for 55 min");
+    return cachedToken;
   } catch (err) {
     console.error("getAuthToken error:", err.response?.status, err.response?.data || err.message);
     throw err;

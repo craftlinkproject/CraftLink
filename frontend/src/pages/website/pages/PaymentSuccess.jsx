@@ -102,7 +102,7 @@ const PaymentSuccess = () => {
   };
 
   useEffect(() => {
-    const orderId = searchParams.get("orderId");
+    const orderId = searchParams.get("orderId") || searchParams.get("order");
     const txnId = searchParams.get("txn_id");
     if (!orderId) {
       safeSetState(setStatus, "failed");
