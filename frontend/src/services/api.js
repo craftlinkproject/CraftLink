@@ -28,8 +28,13 @@ api.interceptors.response.use(
       if (status === 401) {
         sessionStorage.removeItem("token");
         localStorage.removeItem("userData");
+        window.dispatchEvent(new CustomEvent("auth:logout"));
         const returnUrl = encodeURIComponent(window.location.pathname + window.location.search + window.location.hash);
-        window.location.href = `/signin?returnUrl=${returnUrl}`;
+        if (!window.location.pathname.startsWith("/admin")) {
+          window.location.replace(`/signin?returnUrl=${returnUrl}`);
+        } else {
+          window.location.replace(`/admin-login?returnUrl=${returnUrl}`);
+        }
       }
     }
     return Promise.reject(error);

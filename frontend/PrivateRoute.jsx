@@ -15,8 +15,15 @@ export default function ProtectedRoute({ children, allowedRoles }) {
         dispatch(logout());
       }
     };
+    const handleAuthLogout = () => {
+      dispatch(logout());
+    };
     window.addEventListener("storage", handleLogout);
-    return () => window.removeEventListener("storage", handleLogout);
+    window.addEventListener("auth:logout", handleAuthLogout);
+    return () => {
+      window.removeEventListener("storage", handleLogout);
+      window.removeEventListener("auth:logout", handleAuthLogout);
+    };
   }, [dispatch]);
 
   if (loading) {

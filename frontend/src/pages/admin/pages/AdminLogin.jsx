@@ -48,6 +48,11 @@ export default function AdminLogin() {
       );
 
       const user = res.data?.user || res.data;
+      const token = res.data?.token;
+
+      if (token) {
+        sessionStorage.setItem("token", token);
+      }
 
       if (user) {
         dispatch(setUserData(user));
